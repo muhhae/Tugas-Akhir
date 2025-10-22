@@ -1,83 +1,185 @@
-\chapter{PENDAHULUAN}
-\label{chap:pendahuluan}
+\chapter{INTRODUCTION}
+\label{chap:intro}
+This research is driven by the advancement of modern computing
+technology, which is in dire need of more advanced techniques for
+object caching\todo{cite}. Machine learning\todo{cite} has recently
+become a hot topic in computer science research\todo{cite}. Numerous
+studies have been carried out to understand the extent of machine
+learning capabilities in the field of caching\todo{cite}. This
+research investigates how to implement machine learning in cache
+systems and how it compares to popular algorithms.
 
-% Ubah bagian-bagian berikut dengan isi dari pendahuluan
+\section{Background}
+\label{sec:background}
 
-Penelitian ini dilatarbelakangi oleh \lipsum[1][1-5]
+The advancement of computing technology has progressed at an
+incredible speed over the past decade\todo{cite}. In the early
+days, computers were limited to single core processor\todo{cite}.
+This limitation forced engineers and
+programmers to design software that was optimized for
+single-threaded execution. As performance improvements increases began
+to plateau due to physical and thermal
+limitations\todo{cite}, the industry shifted toward multi-core and
+parallel architectures. This transition introduced new challenges in
+software design, requiring developers to adopt concurrent and
+parallel programming models to fully exploit the capabilities of
+modern hardware. Consequently, understanding and optimizing
+multi-threaded applications has become an essential aspect of modern
+computing research and development.
 
-\section{Latar Belakang}
-\label{sec:latarbelakang}
+Caching has long been an integral part of computer
+systems\todo{cite}. It plays a crucial role in improving system
+performance. Over the years, various caching strategies have been
+developed to optimize data retrieval efficiency across different
+environments, from operating systems and web servers to
+distributed systems and cloud infrastructures\todo{cite}.
 
-Pesatnya perkembangan roket yang merupakan \lipsum[1]
+Multi-core architectures, which have become increasingly popular over
+the years, also present significant challenges to existing caching
+techniques. In such environments, multiple cores often access and
+modify shared cache data concurrently, leading to potential race
+conditions and data inconsistency\todo{cite}. To maintain
+correctness, most traditional cache implementations emphasize the use
+of locks during cache insertion, promotion, and modification
+operations\todo{cite}. However, excessive locking can introduce
+contention and reduce parallelism, ultimately limiting system
+performance on modern multi-core processors\todo{cite}.
 
-\lipsum[2]
+Various cache replacement policies have been proposed to address
+different design goals. The Least Recently Used (LRU) policy is
+commonly adopted due to its ability to achieve a low miss ratio by
+retaining frequently accessed data in the cache\todo{cite}. However,
+maintaining precise recency information requires frequent updates and
+synchronization, which increases locking overhead. On the other hand,
+simpler policies such as First-In First-Out (FIFO) are often
+preferred for their scalability and lower synchronization cost, as
+they require no locking\todo{cite}.
 
-\section{Permasalahan}
-\label{sec:permasalahan}
+To overcome the limitations of both LRU and FIFO, the CLOCK algorithm
+was developed as an approximation to LRU that maintains high
+scalability\todo{cite}. CLOCK achieves this by using a circular
+buffer of cache entries, each associated with a reference bit that
+indicates recent access. Instead of maintaining a fully ordered list
+like LRU, the algorithm advances a “clock hand” to find entries for
+replacement, clearing reference bits along the way. This design
+significantly reduces the need for excessive locking and frequent
+updates, while still preserving the benefits of
+LRU. As a result, CLOCK offers a practical balance between achieving
+a low miss ratio and maintaining the scalability and simplicity
+characteristic of FIFO\todo{cite}.
 
-Dari permasalahan tersebut maka \lipsum[1][1-6]
+However, despite its advantages, the CLOCK algorithm still suffers
+from unnecessary promotions~\cite{chen2025lazy}. Because each access
+sets the reference bit regardless of access frequency or importance,
+even one-time or infrequent accesses can prevent an entry from being
+evicted. As a result, the cache may retain items that provide little
+benefit while displacing those with higher reuse potential. This leads to
+inefficiencies in cache utilization.
 
-\section{Tujuan}
+Recent developments in machine learning have opened possibilities to
+use it as an additional decision-making component to reduce
+unnecessary promotions in cache systems. By learning from
+access patterns and identifying objects that are unlikely to be
+reused, machine learning models can help prevent the cache from
+promoting entries that provide little benefit. This approach allows
+the caching mechanism to make more selective and informed decisions
+about which objects deserve to remain in the cache. As a result,
+machine learning can complement traditional algorithms like CLOCK by
+improving efficiency, reducing management overhead, and adapting
+dynamically to changing workload characteristics.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+Based on the discussion in Section \ref{sec:background}, the main
+problem addressed in this research is how to integrate machine
+learning techniques into the CLOCK cache replacement algorithm in
+order to reduce unnecessary promotions and improve overall system
+efficiency. Specifically, this study aims to explore how data-driven
+decision-making can help the CLOCK algorithm better approximate
+optimal replacement behavior. By doing so, the research seeks to
+enhance both the accuracy and scalability of CLOCK-based cache management.
+
+\section{Objectives}
 \label{sec:Tujuan}
 
-Tujuan dari \lipsum[1][1-3] adalah:
+The main objectives of this research are as follows:
 
 \begin{enumerate}[nolistsep]
-
-  \item Membuat \lipsum[2][1-3]
-
-  \item \lipsum[3][1-3]
-
+  \item To integrate machine learning models into the CLOCK cache
+    replacement algorithm to enhance its decision-making process.
+  \item To evaluate the efficiency and effectiveness of the machine
+    learning–based CLOCK algorithm in reducing promotions and
+    improving overall cache performance.
 \end{enumerate}
 
-\section{Batasan Masalah}
-\label{sec:batasanmasalah}
+\section{Scope of the Study}
+\label{sec:scope}
 
-Batasan-batasan dari \lipsum[1][1-3] adalah:
+This study focuses on the integration of machine learning techniques
+into the CLOCK cache replacement algorithm to improve its efficiency
+and reduce unnecessary promotions. The research is limited to
+software-based cache simulation environments rather than hardware
+implementations. The study evaluates performance metrics such as hit
+ratio and promotion rate.
 
-\begin{enumerate}[nolistsep]
+The scope does not include the development of new machine learning
+architectures or the comparison with advanced reinforcement
+learning–based caching systems. Instead, the research emphasizes
+analyzing how existing lightweight models can enhance decision-making
+in CLOCK without significantly increasing complexity. The results and
+conclusions are applicable primarily to cache management systems
+operating in single-node or multi-core environments.
 
-  \item Mempermudah \lipsum[2][1-3]
-
-  \item \lipsum[3][1-5]
-
-  \item \lipsum[4][1-5]
-
-\end{enumerate}
-
-\section{Sistematika Penulisan}
+\section{Organization of the Report}
 \label{sec:sistematikapenulisan}
 
-Laporan penelitian tugas akhir ini terbagi menjadi \lipsum[1][1-3] yaitu:
+This final project report is divided into five chapters as follows:
 
 \begin{enumerate}[nolistsep]
 
-  \item \textbf{BAB I Pendahuluan}
+  \item \textbf{CHAPTER I Introduction}
 
-        Bab ini berisi \lipsum[2][1-5]
+    This chapter presents the background of the study, the main
+    problems to be addressed, the objectives of the research, and the
+    scope of the study. It provides an overview of the motivation and
+    significance of the research topic.
 
-        \vspace{2ex}
+    \vspace{2ex}
 
-  \item \textbf{BAB II Tinjauan Pustaka}
+  \item \textbf{CHAPTER II Literature Review}
 
-        Bab ini berisi \lipsum[3][1-5]
+    This chapter discusses previous works and related studies that
+    serve as the foundation of this research. It highlights existing
+    cache replacement algorithms, the development of the CLOCK
+    algorithm, and prior applications of machine learning in caching systems.
 
-        \vspace{2ex}
+    \vspace{2ex}
 
-  \item \textbf{BAB III Desain dan Implementasi Sistem}
+  \item \textbf{CHAPTER III System Design and Implementation}
 
-        Bab ini berisi \lipsum[4][1-5]
+    This chapter describes the design and implementation of the
+    proposed system. It explains the overall system architecture,
+    data flow, machine learning model integration, and the process of
+    adapting the model to the CLOCK cache replacement algorithm.
 
-        \vspace{2ex}
+    \vspace{2ex}
 
-  \item \textbf{BAB IV Pengujian dan Analisa}
+  \item \textbf{CHAPTER IV Testing and Analysis}
 
-        Bab ini berisi \lipsum[5][1-5]
+    This chapter presents the testing procedures, experimental setup,
+    and evaluation metrics used to measure system performance. It
+    also provides an analysis of the results, comparing the proposed
+    approach with baseline methods in terms of efficiency and
+    promotion reduction.
 
-        \vspace{2ex}
+    \vspace{2ex}
 
-  \item \textbf{BAB V Penutup}
+  \item \textbf{CHAPTER V Conclusion}
 
-        Bab ini berisi \lipsum[6][1-5]
+    This chapter summarizes the findings and contributions of the
+    research. It also discusses possible improvements and
+    recommendations for future work related to machine learning–based
+    cache management.
 
 \end{enumerate}
