@@ -1,6 +1,6 @@
 % Judul dokumen
 \title{Buku Tugas Akhir ITS}
-\author{Musk, Elon Reeve}
+\author{, Muhammad Haekal Muhyidin Al-Araby}
 
 % Pengaturan ukuran teks dan bentuk halaman dua sisi
 \documentclass[12pt,twoside]{report}
@@ -13,7 +13,7 @@
 
 % Pengaturan detail pada file PDF
 \usepackage[pdfauthor={\@author},bookmarksnumbered,pdfborder={0 0 0}]{hyperref}
-
+\usepackage{xcolor}
 % Pengaturan jenis karakter
 \usepackage[utf8]{inputenc}
 
@@ -21,7 +21,7 @@
 \usepackage[table,xcdraw]{xcolor}
 
 % Pengaturan kutipan artikel
-\usepackage[style=apa, backend=biber]{biblatex}
+\usepackage[style=ieee, backend=biber]{biblatex}
 
 % Package lainnya
 \usepackage{changepage}
@@ -40,8 +40,9 @@
 \patchcmd{\cleardoublepage}{\hbox{}}{
   \thispagestyle{empty}
   \vspace*{\fill}
-  \begin{center}\textit{[Halaman ini sengaja dikosongkan]}\end{center}
-  \vfill}{}{}
+  \begin{center}\textit{[Halaman ini sengaja dikosongkan]}
+  \end{center}
+\vfill}{}{}
 
 % Pengaturan penomoran halaman
 \usepackage{fancyhdr}
@@ -67,7 +68,7 @@
   \or Oktober% 10
   \or November% 11
   \or Desember% 12
-  \fi}
+\fi}
 \newcommand{\ENGMONTH}{%
   \ifcase\the\month
   \or January% 1
@@ -82,11 +83,12 @@
   \or October% 10
   \or November% 11
   \or December% 12
-  \fi}
+\fi}
 
 % Pengaturan format judul bab
 \usepackage{titlesec}
-\titleformat{\chapter}[display]{\bfseries\Large}{BAB \centering\Roman{chapter}}{0ex}{\vspace{0ex}\centering}
+\titleformat{\chapter}[display]{\bfseries\Large}{CHAPTER
+\centering\Roman{chapter}}{0ex}{\vspace{0ex}\centering}
 \titleformat{\section}{\bfseries\large}{\MakeUppercase{\thesection}}{1ex}{\vspace{1ex}}
 \titleformat{\subsection}{\bfseries\large}{\MakeUppercase{\thesubsection}}{1ex}{}
 \titleformat{\subsubsection}{\bfseries\large}{\MakeUppercase{\thesubsubsection}}{1ex}{}
@@ -95,12 +97,12 @@
 \titlespacing{\subsection}{0ex}{0.5ex}{0ex}
 \titlespacing{\subsubsection}{0ex}{0.5ex}{0ex}
 
-\input{pustaka/variables.tex}
+\input{references/variables.tex}
 
-\input{pustaka/tanda-hubung.tex}
+\input{references/tanda-hubung.tex}
 
 % Menambahkan resource daftar pustaka
-\addbibresource{pustaka/pustaka.bib}
+\addbibresource{references/references.bib}
 
 % Pengaturan format potongan kode
 \usepackage{listings}
@@ -123,6 +125,8 @@
   tabsize=2,
 }
 \lstset{style=codestyle}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{todo: #1}}}
 
 % Isi keseluruhan dokumen
 \begin{document}
