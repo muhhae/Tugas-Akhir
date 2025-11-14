@@ -1,41 +1,164 @@
-\chapter{DESAIN DAN IMPLEMENTASI}
-\label{chap:desainimplementasi}
+\chapter{PERANCANGAN DAN IMPLEMENTASI SISTEM}
+\label{chap:perancangan_implementasi}
 
-% Ubah bagian-bagian berikut dengan isi dari desain dan implementasi
+Bab ini merinci metodologi yang digunakan dalam penelitian ini, mulai
+dari perancangan dan pengembangan perangkat lunak simulasi, proses
+pengumpulan dan pengolahan data, hingga implementasi dan evaluasi
+model \textit{machine learning}.
 
-Penelitian ini dilaksanakan sesuai \lipsum[1][1-5]
+\section{Metodologi Penelitian}
+\label{sec:metodologi_penelitian}
 
-\section{Deskripsi Sistem}
-\label{sec:deskripsisistem}
+\subsection{Pengembangan Perangkat Lunak Simulasi}
+Langkah pertama dalam penelitian ini adalah pengembangan perangkat
+lunak simulasi kustom yang mampu memenuhi kebutuhan analisis.
+Perangkat lunak ini dirancang dengan beberapa persyaratan utama:
+\begin{enumerate}
+  \item \textbf{Integrasi Model Machine Learning:} Perangkat lunak
+    harus mampu memanggil dan menjalankan model \textit{machine
+    learning} secara efisien di dalam fungsi \textit{eviction} dari
+    algoritma \textit{cache}.
+  \item \textbf{Dukungan Algoritma Pembanding:} Selain algoritma yang
+    diusulkan, perangkat lunak harus dapat menjalankan algoritma
+    CLOCK standar dan Offline CLOCK sebagai tolok ukur perbandingan kinerja.
+  \item \textbf{Pengumpulan Data dari Offline CLOCK:} Perangkat lunak
+    harus mampu menjalankan mode Offline CLOCK untuk mengumpulkan
+    data-data krusial, antara lain:
+    \begin{enumerate}
+      \item Nilai \textit{miss ratio} dan jumlah promosi untuk setiap
+        iterasi simulasi.
+      \item Metadata dari setiap objek pada saat keputusan promosi
+        dibuat, beserta label apakah promosi tersebut pada akhirnya
+        sia-sia (\textit{wasted}) atau tidak.
+      \item Kemampuan untuk mengekspor semua data yang terkumpul ke
+        dalam format CSV (\textit{Comma-Separated Values}) untuk
+        memfasilitasi proses pengolahan dan analisis data lebih lanjut.
+    \end{enumerate}
+\end{enumerate}
+Untuk mempercepat proses pengembangan, penulis memanfaatkan
+\textbf{LibCacheSim}, sebuah pustaka sumber terbuka yang dirancang
+khusus untuk pengembangan simulator \textit{cache}. Pustaka ini
+ditulis dalam bahasa C/C++, yang menjamin kinerja komputasi yang
+sangat efisien, terutama untuk tugas-tugas berat seperti pengumpulan
+data dari \textit{trace} berukuran besar.
 
-Sistem akan dibuat dengan \lipsum[1-2]
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{gambar/alur-program.png}
+  \caption{Diagram alur dari program simulasi yang dikembangkan.}
+  \label{fig:alur_program}
+\end{figure}
 
-\section{Implementasi Alat
-  \label{sec:implementasi alat}}
+\subsection{Pengumpulan Data}
+Pengumpulan data awal dilakukan sepenuhnya menggunakan perangkat
+lunak simulasi yang telah dikembangkan. Tujuannya adalah untuk
+mendapatkan metrik kinerja dasar seperti jumlah promosi dan
+\textit{miss ratio} dari algoritma CLOCK standar. Selain itu, pada
+fase ini juga dilakukan pembuatan dataset yang akan digunakan untuk
+melatih model \textit{machine learning}. Dataset ini dibuat dengan
+cara mencatat (me-\textit{logging}) metadata dari setiap objek pada
+saat keputusan promosi akan dibuat, lalu memberinya label `wasted`
+atau `not wasted` berdasarkan informasi dari simulasi Offline CLOCK.
 
-Alat diimplementasikan dengan \lipsum[1]
+\textit{Trace} yang digunakan dalam penelitian ini adalah
+\textit{trace} sumber terbuka yang juga digunakan oleh
+penelitian-penelitian sebelumnya di bidang ini. \textit{Trace} ini
+mencakup berbagai jenis beban kerja (\textit{workload}) yang
+realistis, seperti \textit{BlockStore}, \textit{KVStorage}, CDN,
+\textit{Proxy}, dan \textit{Photo Storage}, yang berasal dari
+berbagai institusi teknologi terkemuka seperti Twitter, Meta,
+Tencent, dan Alibaba. Selain itu, penulis juga menggunakan
+\textit{trace} sintetis yang dibuat berdasarkan distribusi Zipfian
+untuk mempermudah pemahaman pola data dalam lingkungan yang lebih terkontrol.
 
-% Contoh pembuatan potongan kode
-\begin{lstlisting}[
-  language=C++,
-  caption={Program halo dunia.},
-  label={lst:halodunia}
-]
-#include <iostream>
+\subsection{Pengolahan dan Analisis Data}
+Untuk mempermudah proses analisis, penulis mengembangkan beberapa
+skrip Python. Skrip ini bertugas untuk mengolah data mentah dari
+format CSV, melakukan plotting data menggunakan pustaka seperti
+Plotly dan Pandas, dan menyajikannya dalam sebuah laporan HTML
+interaktif. Visualisasi ini sangat membantu dalam mengidentifikasi
+pola, korelasi, dan anomali dalam data sebelum tahap pengembangan model.
 
-int main() {
-    std::cout << "Halo Dunia!";
-    return 0;
-}
-\end{lstlisting}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{gambar/datasets-figures.png}
+  \caption{Contoh visualisasi distribusi dari metadata \texttt{lifetime\_freq}.}
+  \label{fig:distribusi_metadata}
+\end{figure}
 
-\lipsum[2-3]
+\subsection{Pengembangan Model Machine Learning}
+Dengan menggunakan dataset yang telah diolah, sebuah model
+\textit{machine learning} dikembangkan. Model ini dirancang untuk
+menerima masukan berupa metadata objek (seperti frekuensi akses,
+waktu sejak akses terakhir, ukuran objek, dll.) dan menghasilkan
+keluaran berupa probabilitas (nilai antara 0 hingga 1) yang
+mengindikasikan kelayakan objek tersebut untuk dipromosikan. Nilai
+yang tinggi menandakan bahwa objek tersebut kemungkinan besar tidak
+layak untuk dipromosikan.
 
-% Contoh input potongan kode dari file
-\lstinputlisting[
-  language=Python,
-  caption={Program perhitungan bilangan prima.},
-  label={lst:bilanganprima}
-]{program/bilangan-prima.py}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{gambar/ml-diagrams.png}
+  \caption{Diagram proses pelatihan model \textit{machine learning}.}
+  \label{fig:proses_pelatihan}
+\end{figure}
 
-\lipsum[4]
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{gambar/model-arch.png}
+  \caption{Arsitektur model \textit{machine learning} yang digunakan.}
+  \label{fig:arsitektur_model}
+\end{figure}
+
+\subsection{Implementasi Model pada Perangkat Lunak Simulasi}
+Model \textit{machine learning} yang telah dilatih kemudian
+diimplementasikan kembali ke dalam perangkat lunak simulasi. Untuk
+menjembatani antara lingkungan Python (untuk pelatihan) dan C++
+(untuk simulasi), model diekspor ke dalam format \textbf{ONNX (Open
+Neural Network Exchange)}. Model dalam format ONNX ini kemudian
+dijalankan di dalam simulator menggunakan \textbf{ONNX Runtime},
+sebuah \textit{inference engine} berkinerja tinggi. Di dalam fungsi
+\textit{eviction} pada algoritma CLOCK, sebelum sebuah objek
+dipromosikan, metadatanya akan diekstrak dan dijadikan masukan untuk
+model. Jika keluaran dari model melebihi ambang batas
+(\textit{threshold}) yang telah ditentukan, objek tersebut akan
+langsung digusur alih-alih dipromosikan.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{gambar/model-impl.png}
+  \caption{Diagram alur implementasi model pada simulator.}
+  \label{fig:implementasi_model}
+\end{figure}
+
+\subsection{Evaluasi Model}
+Tahap terakhir adalah evaluasi kinerja model yang telah terintegrasi.
+Kinerja algoritma CLOCK yang telah dimodifikasi dengan
+\textit{machine learning} ini kemudian dibandingkan secara langsung
+dengan algoritma CLOCK standar dan tolok ukur teoretis dari Offline
+CLOCK. Metrik utama yang menjadi fokus perbandingan adalah jumlah
+total promosi dan \textit{miss ratio}.
+
+\section{Perangkat Keras dan Lunak}
+Penelitian ini didukung oleh beberapa perangkat keras dan lunak sebagai berikut:
+\subsection{Perangkat Keras}
+\begin{enumerate}
+  \item \textbf{Testbed Utama:} Sebuah PC server dengan prosesor
+    Intel Xeon Silver 4114 (40 \textit{cores}) @ 3.000GHz dan RAM
+    sebesar 192 GiB.
+  \item \textbf{Laptop Pribadi:} Digunakan untuk pengembangan dan analisis awal.
+\end{enumerate}
+\subsection{Perangkat Lunak}
+\begin{enumerate}
+  \item \textbf{Python:} Bahasa pemrograman utama untuk pengolahan
+    data dan pengembangan model.
+  \item \textbf{Plotly \& Pandas:} Pustaka Python untuk analisis dan
+    visualisasi data.
+  \item \textbf{C++:} Bahasa pemrograman utama untuk perangkat lunak simulasi.
+  \item \textbf{libCacheSim:} Pustaka dasar untuk simulator \textit{cache}.
+  \item \textbf{ONNX Runtime:} Untuk menjalankan inferensi model di
+    lingkungan C++.
+  \item \textbf{SSH:} Untuk mengakses dan mengelola \textit{testbed}
+    dari jarak jauh.
+\end{enumerate}
+

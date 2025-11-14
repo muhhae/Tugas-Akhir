@@ -1,33 +1,74 @@
 \chapter{PENGUJIAN DAN ANALISIS}
-\label{chap:pengujiananalisis}
+\label{chap:pengujian_analisis}
 
-% Ubah bagian-bagian berikut dengan isi dari pengujian dan analisis
+Bab ini menyajikan hasil yang dicapai selama penelitian, dimulai dari
+hasil yang diharapkan, temuan-temuan dari hasil pengujian awal, serta
+analisis terhadap data tersebut untuk memvalidasi pendekatan yang diusulkan.
 
-Pada penelitian ini dipaparkan \lipsum[1][1-5]
+\section{Hasil yang Diharapkan}
+\label{sec:hasil_yang_diharapkan}
 
-\section{Skenario Pengujian}
-\label{sec:skenariopengujian}
+Ekspektasi utama dari penelitian ini adalah bahwa model
+\textit{machine learning} yang dikembangkan akan mampu secara
+signifikan mengurangi jumlah total promosi objek di dalam algoritma
+CLOCK. Pengurangan ini diharapkan dapat dicapai tanpa mengorbankan
+kinerja utama \textit{cache}, yaitu dengan tidak meningkatkan
+\textit{miss ratio} secara berarti. Dengan kata lain, tujuannya
+adalah mencapai efisiensi manajemen \textit{cache} yang lebih tinggi
+dengan membuang promosi yang tidak perlu, sambil tetap mempertahankan
+data yang relevan di dalam \textit{cache}.
 
-Pengujian dilakukan dengan \lipsum[1-2]
+\section{Hasil Pengujian Awal}
+\label{sec:hasil_pengujian_awal}
 
-\section{Evaluasi Pengujian}
-\label{sec:analisispengujian}
+Hingga tahap ini, penulis telah berhasil menyelesaikan beberapa
+tonggak penting. Perangkat lunak simulasi untuk akuisisi data dari
+\textit{trace} telah berhasil dikembangkan. Selain itu, skrip Python
+untuk memproses dan memvisualisasikan data yang dihasilkan juga telah
+dibuat, memungkinkan analisis yang lebih cepat dan interaktif.
 
-Dari pengujian yang \lipsum[1]
+\subsection{Hasil Eksperimen Offline CLOCK}
+Eksperimen awal dilakukan dengan menggunakan algoritma Offline CLOCK
+pada \textit{trace} Meta Key-Value untuk menetapkan batas atas
+kinerja. Hasil dari simulasi ini, seperti yang ditunjukkan pada
+Gambar \ref{fig:hasil_offline_clock}, menunjukkan adanya penurunan
+drastis pada jumlah promosi dan juga pada \textit{miss ratio}.
+Penurunan yang signifikan ini merupakan indikasi kuat bahwa pada
+implementasi standar algoritma CLOCK, terjadi banyak sekali promosi
+yang sia-sia (\textit{wasted promotions}). Promosi ini tidak hanya
+membuang sumber daya komputasi, tetapi juga berpotensi "mengotori"
+\textit{cache} dengan objek-objek yang sebenarnya tidak akan diakses kembali.
 
-% Contoh pembuatan tabel
-\begin{longtable}{|c|c|c|}
-  \caption{Hasil Pengukuran Energi dan Kecepatan}
-  \label{tb:EnergiKecepatan}                                   \\
-  \hline
-  \rowcolor[HTML]{C0C0C0}
-  \textbf{Energi} & \textbf{Jarak Tempuh} & \textbf{Kecepatan} \\
-  \hline
-  10 J            & 1000 M                & 200 M/s            \\
-  20 J            & 2000 M                & 400 M/s            \\
-  30 J            & 4000 M                & 800 M/s            \\
-  40 J            & 8000 M                & 1600 M/s           \\
-  \hline
-\end{longtable}
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.4]{gambar/offline.png}
+  \caption{Grafik hasil dari simulasi Offline CLOCK pada
+  \textit{trace} Meta Key-Value.}
+  \label{fig:hasil_offline_clock}
+\end{figure}
 
-\lipsum[2-4]
+\subsection{Hasil Pengembangan Model Awal}
+Pada tahap pengembangan model, penulis telah melakukan eksperimen
+awal dengan model regresi logistik (\textit{logistic regression}).
+Model ini dipilih karena kesederhanaannya dan kemampuannya untuk
+diinterpretasikan. Bobot dan ambang batas (\textit{threshold}) dari
+model ini telah disesuaikan untuk mendapatkan hasil yang optimal pada
+data validasi. Hasil dari model ini dapat dilihat pada Gambar
+\ref{fig:hasil_model_lr}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.4]{gambar/res.png}
+  \caption{Grafik perbandingan hasil dari model regresi logistik.}
+  \label{fig:hasil_model_lr}
+\end{figure}
+
+Gambar \ref{fig:hasil_model_lr} menunjukkan perbandingan rata-rata
+pengurangan jumlah promosi dan perubahan pada \textit{miss ratio}
+setelah penerapan model. Seperti yang terlihat, jumlah promosi
+berhasil dikurangi secara signifikan, sekitar \textbf{10\%},
+sementara pada saat yang sama, \textit{miss ratio} tidak terlalu
+terpengaruh dan tetap stabil. Hasil awal ini sangat menjanjikan dan
+selaras dengan tujuan utama penelitian, yaitu mengurangi promosi
+tanpa mengorbankan \textit{hit ratio}.
+

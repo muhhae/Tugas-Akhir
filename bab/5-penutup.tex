@@ -1,34 +1,74 @@
 \chapter{PENUTUP}
 \label{chap:penutup}
 
-% Ubah bagian-bagian berikut dengan isi dari penutup
+Bab ini merangkum keseluruhan hasil dari penelitian yang telah
+dilakukan. Bagian pertama, Kesimpulan, menyajikan ringkasan temuan
+utama, sementara bagian kedua, Saran, memberikan rekomendasi untuk
+pengembangan penelitian ini di masa mendatang.
 
 \section{Kesimpulan}
 \label{sec:kesimpulan}
 
-Berdasarkan hasil pengujian yang \lipsum[1][1-3] sebagai berikut:
+Berdasarkan perancangan, implementasi, dan pengujian yang telah
+dilakukan dalam penelitian ini, dapat ditarik beberapa kesimpulan
+sebagai berikut:
 
 \begin{enumerate}[nolistsep]
-
-  \item Pembuatan \lipsum[2][1-3]
-
-  \item \lipsum[2][4-6]
-
-  \item \lipsum[2][7-10]
-
+  \item Integrasi model \textit{machine learning} ke dalam algoritma
+    \textit{cache eviction} CLOCK terbukti dapat meningkatkan
+    efisiensi manajemen \textit{cache}. Model yang dikembangkan mampu
+    mengidentifikasi dan mencegah promosi objek yang tidak perlu atau sia-sia.
+  \item Penerapan model regresi logistik yang telah disesuaikan
+    berhasil mengurangi jumlah total promosi objek sekitar
+    \textbf{10\%} pada data pengujian. Pengurangan ini dicapai tanpa
+    memberikan dampak negatif yang signifikan terhadap \textit{miss
+    ratio} sistem, yang berarti kinerja utama \textit{cache} dalam
+    melayani permintaan data tetap terjaga.
+  \item Penelitian ini menunjukkan bahwa bahkan model \textit{machine
+    learning} yang relatif sederhana dan ringan dapat memberikan
+    peningkatan kinerja yang berarti pada algoritma \textit{cache}
+    klasik. Hal ini membuka peluang untuk implementasi serupa pada
+    sistem nyata di mana \textit{overhead} komputasi menjadi
+    pertimbangan penting.
 \end{enumerate}
+
+Secara keseluruhan, penelitian ini berhasil menunjukkan bahwa
+pendekatan berbasis data menggunakan \textit{machine learning} adalah
+arah yang menjanjikan untuk mengoptimalkan algoritma CLOCK,
+menjadikannya lebih cerdas dan lebih efisien dalam mengelola sumber
+daya \textit{cache}.
 
 \section{Saran}
-\label{chap:saran}
+\label{sec:saran}
 
-Untuk pengembangan lebih lanjut pada \lipsum[1][1-3] antara lain:
+Meskipun penelitian ini telah mencapai tujuannya, terdapat beberapa
+area yang dapat dieksplorasi lebih lanjut untuk pengembangan di masa
+depan. Beberapa saran untuk penelitian selanjutnya antara lain:
 
 \begin{enumerate}[nolistsep]
-
-  \item Memperbaiki \lipsum[2][1-3]
-
-  \item \lipsum[2][4-6]
-
-  \item \lipsum[2][7-10]
-
+  \item \textbf{Eksplorasi Model Machine Learning yang Lebih
+    Kompleks:} Penelitian ini menggunakan model regresi logistik.
+    Studi di masa depan dapat mengeksplorasi penggunaan arsitektur
+    model yang lebih canggih, seperti \textit{neural network} yang
+    lebih dalam atau model berbasis \textit{ensemble} (misalnya,
+    Gradient Boosting atau Random Forest) untuk melihat apakah
+    peningkatan kompleksitas model dapat memberikan akurasi dan
+    efisiensi yang lebih tinggi.
+  \item \textbf{Penerapan Reinforcement Learning:} Mengingat sifat
+    dinamis dari manajemen \textit{cache}, pendekatan menggunakan
+    \textit{reinforcement learning} (RL) dapat menjadi alternatif
+    yang sangat menarik. Model RL dapat dilatih untuk membuat
+    kebijakan \textit{eviction} yang adaptif secara
+    \textit{real-time} terhadap perubahan pola beban kerja.
+  \item \textbf{Pengujian pada Lingkungan Produksi Nyata:} Penelitian
+    ini terbatas pada lingkungan simulasi. Langkah selanjutnya yang
+    ideal adalah mengimplementasikan dan menguji algoritma yang
+    diusulkan pada sistem produksi nyata untuk memvalidasi kinerjanya
+    di bawah beban kerja yang sesungguhnya dan mengukur
+    \textit{overhead} inferensi model secara akurat.
+  \item \textbf{Analisis Fitur yang Lebih Mendalam:} Melakukan
+    analisis yang lebih mendalam terhadap fitur-fitur (metadata
+    objek) yang paling berpengaruh terhadap keputusan promosi dapat
+    membantu dalam merancang model yang lebih efisien dan ringan di masa depan.
 \end{enumerate}
+
