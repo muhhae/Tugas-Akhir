@@ -15,7 +15,7 @@ Algoritma ini pertama kali dikembangkan pada awal tahun 1970-an oleh
 para peneliti IBM untuk memenuhi kebutuhan sistem penggantian halaman
 (\textit{page-replacement}) pada komputer \textit{mainframe} yang
 memiliki \textit{overhead} lebih rendah dibandingkan dengan algoritma
-LRU yang populer pada masanya.
+LRU yang populer pada masanya~\cite{Tang1976Cache}.
 
 Sejak diperkenalkan, beberapa pengembangan signifikan telah dibangun
 di atas algoritma CLOCK asli. Salah satu contoh yang paling terkenal
@@ -27,9 +27,10 @@ menyeimbangkan kedua daftar ini berdasarkan pada kebaruan
 (\textit{recency}) dan frekuensi (\textit{frequency}) akses objek.
 Hal ini memungkinkan CAR untuk beradaptasi secara lebih efektif
 terhadap perubahan pola akses data dibandingkan dengan algoritma
-CLOCK standar atau LRU.
+CLOCK standar atau LRU~\cite{Bansal2004CAR}.
 
-Pengembangan penting lainnya adalah algoritma \textbf{Clock-Pro}.
+Pengembangan penting lainnya adalah algoritma
+\textbf{Clock-Pro}~\cite{Jiang2005CLOCKPro}.
 Algoritma ini memperkenalkan pendekatan yang lebih kompleks dengan
 mengkategorikan objek ke dalam tiga daftar: \textit{Hot},
 \textit{Cold}, dan \textit{Test}. Objek yang sering diakses akan
@@ -57,7 +58,8 @@ frekuensi, beradaptasi dengan berbagai pola akses, dan mencapai
 namun berkecepatan sangat tinggi yang berfungsi untuk menyimpan data
 yang sering diakses. Tujuan utama dari penggunaan \textit{cache}
 adalah untuk mempercepat waktu akses data, yang pada akhirnya akan
-meningkatkan kinerja sistem secara keseluruhan. Mekanisme
+meningkatkan kinerja sistem secara
+keseluruhan~\cite{Zhang2016HDCache, Zhang2012A, Liu2022Adaptive}. Mekanisme
 \textit{caching} diimplementasikan di hampir semua sistem komputasi
 modern untuk memastikan bahwa objek yang baru atau sering digunakan
 dapat diakses secara instan tanpa harus mengambilnya dari media
@@ -65,17 +67,19 @@ penyimpanan yang lebih lambat atau melalui proses komputasi ulang
 yang memakan waktu.
 
 \subsection{Algoritma Eviction}
-Algoritma \textit{eviction} (penggusuran) adalah metode yang
-digunakan untuk menentukan data mana yang harus dikeluarkan dari
-\textit{cache} ketika kapasitasnya sudah penuh dan ada data baru yang
-perlu dimasukkan. Algoritma ini sangat krusial untuk menjaga
+Algoritma \textit{eviction} atau \textit{replacement} (penggusuran)
+adalah metode yang digunakan untuk menentukan data mana yang harus
+dikeluarkan dari \textit{cache} ketika kapasitasnya sudah penuh dan
+ada data baru yang
+perlu dimasukkan~\cite{Belady1966A}. Algoritma ini sangat krusial untuk menjaga
 efisiensi \textit{cache} dengan memastikan bahwa data yang paling
 relevan tetap tersimpan sementara data yang sudah jarang digunakan
 dapat digantikan. Contoh umum dari algoritma ini adalah FIFO, LRU, dan CLOCK.
 
 \subsection{FIFO (First-In, First-Out)}
 FIFO adalah salah satu algoritma \textit{eviction} yang paling
-sederhana. Sesuai dengan namanya, kebijakan ini akan mengeluarkan
+sederhana~\cite{Yang2023FIFO,Dan1990An}. Sesuai dengan namanya, kebijakan ini
+akan mengeluarkan
 data yang pertama kali masuk ke dalam \textit{cache}. FIFO tidak
 mempertimbangkan frekuensi atau kebaruan akses data, sehingga data
 yang paling lama berada di dalam \textit{cache} akan selalu menjadi
@@ -85,7 +89,7 @@ yang paling tinggi dibandingkan algoritma populer lainnya.
 
 \subsection{LRU (Least Recently Used)}
 LRU adalah algoritma \textit{eviction} yang menggantikan data yang
-paling lama tidak diakses. Algoritma ini beroperasi berdasarkan
+paling lama tidak diakses~\cite{Dan1990An}. Algoritma ini beroperasi berdasarkan
 asumsi bahwa data yang baru saja diakses memiliki kemungkinan besar
 untuk diakses kembali dalam waktu dekat. LRU biasanya
 diimplementasikan menggunakan struktur data antrian (\textit{queue})
@@ -95,7 +99,8 @@ sehingga melindunginya dari proses \textit{eviction}.
 \subsection{CLOCK}
 Algoritma CLOCK adalah variasi dari kebijakan \textit{eviction} yang
 memberikan "kesempatan kedua" pada data sebelum dikeluarkan dari
-\textit{cache}. Setiap entri dalam \textit{cache} memiliki sebuah bit
+\textit{cache}~\cite{chen2025lazy}. Setiap entri dalam \textit{cache}
+memiliki sebuah bit
 referensi. Ketika proses \textit{eviction} diperlukan, algoritma ini
 akan memeriksa bit referensi dari entri yang ditunjuk oleh "jarum
 jam". Jika bit referensi bernilai 0, data tersebut akan diganti. Jika
@@ -117,7 +122,8 @@ iterasi, setiap promosi objek yang ternyata tidak diakses kembali
 (promosi sia-sia) akan dicatat. Pada iterasi berikutnya, promosi
 sia-sia tersebut akan diabaikan. Proses ini secara dramatis
 mengurangi jumlah total promosi yang dilakukan dan digunakan sebagai
-batas atas (\textit{upper bound}) dari kinerja optimal yang bisa dicapai.
+batas atas (\textit{upper bound}) dari kinerja optimal yang bisa
+dicapai~\cite{chen2025lazy}.
 
 \subsection{Machine Learning}
 \textit{Machine learning} adalah cabang dari kecerdasan buatan (AI)
@@ -126,7 +132,9 @@ komputer untuk "belajar" dari data dan membuat prediksi atau
 keputusan tanpa diprogram secara eksplisit. Dalam \textit{machine
 learning}, sebuah sistem mempelajari pola atau hubungan dari data
 latih (\textit{training data}) untuk kemudian diterapkan pada data
-baru yang belum pernah dilihat sebelumnya.
+baru yang belum pernah dilihat
+sebelumnya~\cite{Chapelle2006SemiSupervised,
+Cunningham2008Supervised, Sutton2005Reinforcement}.
 
 \subsection{Supervised Learning}
 \textit{Supervised learning} (pembelajaran terarah) adalah salah satu
@@ -136,12 +144,13 @@ masukan (\textit{input}) dipasangkan dengan keluaran
 (\textit{output}) yang sudah diketahui. Tujuannya adalah untuk
 menciptakan sebuah model yang mampu memetakan \textit{input} ke
 \textit{output} secara akurat, sehingga dapat digunakan untuk
-melakukan prediksi pada data baru.
+melakukan prediksi pada data baru~\cite{Cunningham2008Supervised}.
 
 \subsection{Trace Replay}
 \textit{Trace replay} adalah sebuah metode yang umum digunakan dalam
 evaluasi sistem komputer, khususnya dalam penelitian terkait
-\textit{cache}, memori, atau sistem file. Dalam metode ini, urutan
+\textit{cache}, memori, atau sistem file~\cite{Yang2021A}. Dalam
+metode ini, urutan
 akses data (disebut \textit{trace}) dari sebuah sistem nyata direkam
 terlebih dahulu, kemudian "diputar ulang" (\textit{replayed}) pada
 sistem atau model yang sedang diuji. \textit{Trace replay}
@@ -151,25 +160,28 @@ aplikasi aslinya secara langsung.
 
 \subsection{LibCacheSim}
 LibCacheSim adalah sebuah pustaka (\textit{library}) yang digunakan
-untuk melakukan simulasi \textit{cache} pada sistem komputer. Pustaka
+untuk melakukan simulasi \textit{cache} pada sistem
+komputer~\cite{Yang2021A}. Pustaka
 ini memungkinkan peneliti dan pengembang untuk menguji dan
 menganalisis kinerja berbagai kebijakan penggantian \textit{cache}
 (seperti LRU, FIFO, CLOCK) dalam berbagai skenario akses data.
 
 \subsection{ONNX (Open Neural Network Exchange)}
 ONNX adalah sebuah format \textit{open-source} yang dirancang untuk
-merepresentasikan model \textit{machine learning}. Format ini
+merepresentasikan model \textit{machine learning}~\cite{Lin2019ONNC,
+Tian2020Compiling, Jajal2024Interoperability}. Format ini
 berfungsi sebagai standar terbuka yang memungkinkan pengembang untuk
 memindahkan model antar-kerangka kerja (\textit-framework)
 \textit{machine learning} yang berbeda, seperti PyTorch dan
-TensorFlow. Tujuannya adalah untuk memfasilitasi interoperabilitas,
+TensorFlow~\cite{Sever2021A}. Tujuannya adalah untuk memfasilitasi
+interoperabilitas,
 sehingga model yang dilatih di satu \textit{framework} dapat dengan
-mudah dijalankan di \textit{framework} lain.
+mudah dijalankan di \textit{framework} lain~\cite{Jajal2024Interoperability}.
 
 \subsection{ONNX Runtime}
 ONNX Runtime adalah sebuah \textit{inference engine} berkinerja
 tinggi yang dikembangkan oleh Microsoft untuk menjalankan model yang
-disimpan dalam format ONNX. Tujuannya adalah untuk memaksimalkan
-kinerja inferensi (proses penggunaan model yang sudah dilatih) di
+disimpan dalam format ONNX~\cite{Sever2021A,Lin2019ONNC,
+Tian2020Compiling, Jajal2024Interoperability}. Tujuannya adalah untuk
+memaksimalkan kinerja inferensi (proses penggunaan model yang sudah dilatih) di
 berbagai jenis perangkat keras (CPU, GPU, dll.) dan sistem operasi.
-

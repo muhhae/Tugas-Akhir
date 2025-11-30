@@ -1,16 +1,11 @@
-\chapter{PERANCANGAN DAN IMPLEMENTASI SISTEM}
+\chapter{METODOLOGI}
 \label{chap:perancangan_implementasi}
 
 Bab ini merinci metodologi yang digunakan dalam penelitian ini, mulai
-dari perancangan dan pengembangan perangkat lunak simulasi, proses
+dari datasets, perancangan dan pengembangan perangkat lunak simulasi, proses
 pengumpulan dan pengolahan data, hingga implementasi dan evaluasi
 model \textit{machine learning}.
-
-\section{Metodologi Penelitian}
-\label{sec:metodologi_penelitian}
-
-\subsection{Pengembangan Perangkat Lunak Simulasi}
-Langkah pertama dalam penelitian ini adalah pengembangan perangkat
+\section{Datasets}
 lunak simulasi kustom yang mampu memenuhi kebutuhan analisis.
 Perangkat lunak ini dirancang dengan beberapa persyaratan utama:
 \begin{enumerate}
@@ -49,7 +44,7 @@ data dari \textit{trace} berukuran besar.
   \label{fig:alur_program}
 \end{figure}
 
-\subsection{Pengumpulan Data}
+\section{Pengumpulan Data}
 Pengumpulan data awal dilakukan sepenuhnya menggunakan perangkat
 lunak simulasi yang telah dikembangkan. Tujuannya adalah untuk
 mendapatkan metrik kinerja dasar seperti jumlah promosi dan
@@ -71,7 +66,7 @@ Tencent, dan Alibaba. Selain itu, penulis juga menggunakan
 \textit{trace} sintetis yang dibuat berdasarkan distribusi Zipfian
 untuk mempermudah pemahaman pola data dalam lingkungan yang lebih terkontrol.
 
-\subsection{Pengolahan dan Analisis Data}
+\section{Pengolahan dan Analisis Data}
 Untuk mempermudah proses analisis, penulis mengembangkan beberapa
 skrip Python. Skrip ini bertugas untuk mengolah data mentah dari
 format CSV, melakukan plotting data menggunakan pustaka seperti
@@ -86,7 +81,7 @@ pola, korelasi, dan anomali dalam data sebelum tahap pengembangan model.
   \label{fig:distribusi_metadata}
 \end{figure}
 
-\subsection{Pengembangan Model Machine Learning}
+\section{Pengembangan Model Machine Learning}
 Dengan menggunakan dataset yang telah diolah, sebuah model
 \textit{machine learning} dikembangkan. Model ini dirancang untuk
 menerima masukan berupa metadata objek (seperti frekuensi akses,
@@ -110,7 +105,7 @@ layak untuk dipromosikan.
   \label{fig:arsitektur_model}
 \end{figure}
 
-\subsection{Implementasi Model pada Perangkat Lunak Simulasi}
+\section{Implementasi Model pada Perangkat Lunak Simulasi}
 Model \textit{machine learning} yang telah dilatih kemudian
 diimplementasikan kembali ke dalam perangkat lunak simulasi. Untuk
 menjembatani antara lingkungan Python (untuk pelatihan) dan C++
@@ -131,7 +126,7 @@ langsung digusur alih-alih dipromosikan.
   \label{fig:implementasi_model}
 \end{figure}
 
-\subsection{Evaluasi Model}
+\section{Evaluasi Model}
 Tahap terakhir adalah evaluasi kinerja model yang telah terintegrasi.
 Kinerja algoritma CLOCK yang telah dimodifikasi dengan
 \textit{machine learning} ini kemudian dibandingkan secara langsung
@@ -141,14 +136,14 @@ total promosi dan \textit{miss ratio}.
 
 \section{Perangkat Keras dan Lunak}
 Penelitian ini didukung oleh beberapa perangkat keras dan lunak sebagai berikut:
-\subsection{Perangkat Keras}
+\section{Perangkat Keras}
 \begin{enumerate}
   \item \textbf{Testbed Utama:} Sebuah PC server dengan prosesor
     Intel Xeon Silver 4114 (40 \textit{cores}) @ 3.000GHz dan RAM
     sebesar 192 GiB.
   \item \textbf{Laptop Pribadi:} Digunakan untuk pengembangan dan analisis awal.
 \end{enumerate}
-\subsection{Perangkat Lunak}
+\section{Perangkat Lunak}
 \begin{enumerate}
   \item \textbf{Python:} Bahasa pemrograman utama untuk pengolahan
     data dan pengembangan model.

@@ -7,22 +7,33 @@ manajemen \textit{cache} objek. Dalam beberapa tahun terakhir,
 \textit{machine learning} telah menjadi topik yang sangat populer
 dalam riset ilmu komputer. Berbagai studi telah dilakukan untuk
 memahami sejauh mana kapabilitas \textit{machine learning} dapat
-diterapkan dalam bidang \textit{caching}. Penelitian ini secara
+diterapkan dalam bidang
+\textit{caching}~\cite{Herodotou2019AutoCache,
+  Sethumurugan2021Designing, Sun2022NCache, Shuja2021Applying,
+Wang2018Efficient, Berger2018Towards}. Penelitian ini secara
 spesifik menyelidiki bagaimana \textit{machine learning} dapat
 diimplementasikan dalam sistem \textit{cache} untuk meningkatkan
-efisiensi algoritma populer seperti CLOCK.
+efisiensi algoritma populer seperti CLOCK terhadap distribusi
+zipfian~\cite{Breslau1999Web}.
 
 \section{Latar Belakang}
 \label{sec:latar_belakang}
 
 Perkembangan teknologi komputasi telah melaju dengan kecepatan yang
 luar biasa selama dekade terakhir. Pada masa-masa awal, komputer
-terbatas pada prosesor \textit{single-core}. Keterbatasan ini memaksa
+terbatas pada prosesor
+\textit{single-core}~\cite{Liptay1968Structural, Turing2004Lecture,
+Shima2005The, Bäck1997Evolutionary}. Keterbatasan ini memaksa
 para insinyur dan pemrogram untuk merancang perangkat lunak yang
-dioptimalkan untuk eksekusi \textit{single-threaded}. Seiring waktu,
+dioptimalkan untuk eksekusi
+\textit{single-threaded}. Seiring waktu,
 ketika peningkatan kinerja mulai melambat karena batasan fisik dan
-termal, industri beralih ke arsitektur \textit{multi-core} dan
-paralel. Transisi ini memperkenalkan tantangan baru dalam desain
+termal, industri beralih ke arsitektur
+\textit{multi-core}~\cite{Papadopoulos1991Multithreading,
+Herlihy2006The, Borkenhagen2000A, Abdallah2017Advanced} dan
+paralel~\cite{Sodan2010Parallelism, Kim2016Performance,
+Eickemeyer1996Evaluation}. Transisi ini memperkenalkan tantangan baru
+dalam desain
 perangkat lunak, menuntut pengembang untuk mengadopsi model
 pemrograman konkuren dan paralel untuk memanfaatkan sepenuhnya
 kapabilitas perangkat keras modern. Akibatnya, pemahaman dan
@@ -30,23 +41,27 @@ optimalisasi aplikasi \textit{multi-threaded} telah menjadi aspek
 penting dalam riset dan pengembangan komputasi modern.
 
 \textit{Caching} telah lama menjadi bagian integral dari sistem
-komputer. Mekanisme ini memainkan peran krusial dalam meningkatkan
+komputer Mekanisme ini memainkan peran krusial dalam meningkatkan
 kinerja sistem dengan menyimpan data yang sering diakses di lokasi
-penyimpanan yang lebih cepat. Selama bertahun-tahun, berbagai
+penyimpanan yang lebih cepat~\cite{Belady1966A, Wilkes1965Slave,
+Liptay1968Structural}. Selama bertahun-tahun, berbagai
 strategi \textit{caching} telah dikembangkan untuk mengoptimalkan
 efisiensi pengambilan data di berbagai lingkungan, mulai dari sistem
 operasi dan server web hingga sistem terdistribusi dan infrastruktur
-\textit{cloud}.
+\textit{cloud}~\cite{Zhang2012A, Liu2022Adaptive, Zhang2016HDCache}.
 
 Arsitektur \textit{multi-core}, yang telah menjadi standar industri,
 juga menghadirkan tantangan signifikan bagi teknik \textit{caching}
-yang ada. Dalam lingkungan seperti ini, beberapa inti prosesor sering
+yang ada~\cite{Eklöv2011Fast, Calandrino2009On, Seo2009Design}. Dalam
+lingkungan seperti ini, beberapa inti prosesor sering
 kali mengakses dan memodifikasi data \textit{cache} yang sama secara
 bersamaan, yang dapat menyebabkan kondisi balapan (\textit{race
-conditions}) dan inkonsistensi data. Untuk menjaga kebenaran data,
+conditions}) dan inkonsistensi data ~\cite{Herlihy2006The}. Untuk
+menjaga kebenaran data,
 sebagian besar implementasi \textit{cache} tradisional menekankan
 penggunaan kunci (\textit{locks}) selama operasi penyisipan, promosi,
-dan modifikasi. Namun, penggunaan \textit{lock} yang berlebihan dapat
+dan modifikasi~\cite{Vera2003Data, Hu1998A, Mohan2005Efficient}.
+Namun, penggunaan \textit{lock} yang berlebihan dapat
 menimbulkan persaingan (\textit{contention}) dan mengurangi
 paralelisme, yang pada akhirnya membatasi kinerja sistem pada
 prosesor \textit{multi-core} modern.
@@ -55,17 +70,20 @@ Berbagai kebijakan penggantian \textit{cache} (\textit{cache
 replacement policies}) telah diusulkan untuk mencapai tujuan desain
 yang berbeda. Kebijakan \textbf{Least Recently Used (LRU)} umum
 digunakan karena kemampuannya untuk mencapai \textit{miss ratio} yang
-rendah dengan mempertahankan data yang sering diakses. Namun, LRU
+rendah dengan mempertahankan data yang sering
+diakses~\cite{Fricker2012A, O’Neil1993The, O’Neil1999An}. Namun, LRU
 memerlukan pembaruan dan sinkronisasi yang sering untuk memelihara
 informasi kebaruan data secara presisi, yang meningkatkan
 \textit{overhead} dari \textit{locking}. Di sisi lain, kebijakan yang
 lebih sederhana seperti \textbf{First-In First-Out (FIFO)} sering
 kali lebih disukai karena skalabilitasnya dan biaya sinkronisasi yang
-lebih rendah, karena hampir tidak memerlukan \textit{locking}.
+lebih rendah, karena hampir tidak memerlukan
+\textit{locking}`\cite{Dan1990An, Moir2005Using, Molnar2002A}.
 
 Untuk mengatasi keterbatasan LRU dan FIFO, algoritma \textbf{CLOCK}
 dikembangkan sebagai aproksimasi dari LRU yang tetap mempertahankan
-skalabilitas tinggi. CLOCK menggunakan \textit{buffer} melingkar
+skalabilitas tinggi   te{Tang1976Cache}. CLOCK menggunakan
+\textit{buffer} melingkar
 (\textit{circular buffer}) dari entri \textit{cache}, di mana setiap
 entri memiliki bit referensi yang menandakan akses terkini. Alih-alih
 memelihara daftar yang terurut sepenuhnya seperti LRU, algoritma ini
@@ -75,10 +93,12 @@ secara signifikan mengurangi kebutuhan akan \textit{locking} yang
 berlebihan dan pembaruan yang sering, sambil tetap mempertahankan
 manfaat dari LRU. Hasilnya, CLOCK menawarkan keseimbangan praktis
 antara mencapai \textit{miss ratio} yang rendah dan menjaga
-skalabilitas serta kesederhanaan yang menjadi ciri khas FIFO.
+skalabilitas serta kesederhanaan yang menjadi ciri khas
+FIFO~\cite{chen2025lazy}.
 
 Namun, terlepas dari keunggulannya, algoritma CLOCK masih mengalami
-masalah promosi yang tidak perlu. Karena setiap akses akan mengatur
+masalah promosi yang tidak perlu
+\cite{Eads2014NbQCLOCK,chen2025lazy}. Karena setiap akses akan mengatur
 bit referensi tanpa memandang frekuensi atau kepentingan akses,
 bahkan akses tunggal atau yang jarang terjadi dapat mencegah sebuah
 entri untuk digusur. Akibatnya, \textit{cache} dapat mempertahankan
@@ -98,7 +118,8 @@ keputusan yang lebih selektif dan terinformasi tentang objek mana
 yang layak dipertahankan. Dengan demikian, \textit{machine learning}
 dapat melengkapi algoritma tradisional seperti CLOCK dengan
 meningkatkan efisiensi, mengurangi \textit{overhead} manajemen, dan
-beradaptasi secara dinamis terhadap karakteristik beban kerja yang berubah.
+beradaptasi secara dinamis terhadap karakteristik beban kerja yang
+berubah~\cite{Cunningham2008Supervised,Chapelle2006SemiSupervised,Hilbe2009Logistic,Hosmer2013Applied}.
 
 \section{Rumusan Masalah}
 \label{sec:rumusan_masalah}
@@ -134,17 +155,19 @@ Studi ini berfokus pada integrasi teknik \textit{machine learning} ke
 dalam algoritma penggantian \textit{cache} CLOCK untuk meningkatkan
 efisiensinya. Penelitian ini terbatas pada lingkungan simulasi
 \textit{cache} berbasis perangkat lunak, bukan implementasi perangkat
-keras. Studi ini mengevaluasi metrik kinerja seperti \textit{hit
+keras. Studi ini mengevaluasi metrik kinerja seperti \textit{miss
 ratio} dan tingkat promosi.
 
 Ruang lingkup penelitian tidak mencakup pengembangan arsitektur
 \textit{machine learning} baru atau perbandingan dengan sistem
-\textit{caching} berbasis \textit{reinforcement learning} yang
+\textit{caching} berbasis \textit{reinforcement
+learning}~\cite{Sutton2005Reinforcement} yang
 canggih. Sebaliknya, penelitian ini menekankan analisis tentang
 bagaimana model ringan yang ada dapat meningkatkan pengambilan
 keputusan di CLOCK tanpa meningkatkan kompleksitas secara signifikan.
 Penelitian ini hanya berfokus pada promosi dan miss ratio serta tidak
-menekankan performa asli pada perangkat keras nyata..
+menekankan performa asli pada perangkat keras nyata. Penelitian ini
+juga terbatas pada \textit{datasets} berbasis zipfian.
 
 \section{Sistematika Penulisan}
 \label{sec:sistematika_penulisan}
