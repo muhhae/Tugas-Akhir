@@ -1,0 +1,7 @@
+graph TD
+A[Baca trace] --> B{Object ada di Cache}
+B -- Ya --> C[Hit]
+B -- Tidak --> D[Miss]
+D --> E{Cache memiliki ruang}
+E -- Ya --> F[Masukkan / insertion]
+E -- Tidak --> G[Keluarkan Object pada Cache] --> D

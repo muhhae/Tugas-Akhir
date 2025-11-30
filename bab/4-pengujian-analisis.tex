@@ -1,74 +1,170 @@
 \chapter{PENGUJIAN DAN ANALISIS}
-\label{chap:pengujian_analisis}
 
-Bab ini menyajikan hasil yang dicapai selama penelitian, dimulai dari
-hasil yang diharapkan, temuan-temuan dari hasil pengujian awal, serta
-analisis terhadap data tersebut untuk memvalidasi pendekatan yang diusulkan.
+Bagian ini menguraikan hasil evaluasi kuantitatif dari model ML-CLOCK
+yang diusulkan.
+Kinerja model dibandingkan dengan tiga standar:
+CLOCK Standar (Baseline), Optimal Zipf Promotion (Heuristik Oracle Sederhana),
+dan Offline CLOCK (Batas Atas Teoretis).
+Pengujian dilakukan pada empat variasi ukuran \textit{cache}: 1\%,
+10\%, 20\%, dan 40\%
+dari total ukuran dataset unik.
 
-\section{Hasil yang Diharapkan}
-\label{sec:hasil_yang_diharapkan}
+\section{Perbandingan Kinerja Keseluruhan}
 
-Ekspektasi utama dari penelitian ini adalah bahwa model
-\textit{machine learning} yang dikembangkan akan mampu secara
-signifikan mengurangi jumlah total promosi objek di dalam algoritma
-CLOCK. Pengurangan ini diharapkan dapat dicapai tanpa mengorbankan
-kinerja utama \textit{cache}, yaitu dengan tidak meningkatkan
-\textit{miss ratio} secara berarti. Dengan kata lain, tujuannya
-adalah mencapai efisiensi manajemen \textit{cache} yang lebih tinggi
-dengan membuang promosi yang tidak perlu, sambil tetap mempertahankan
-data yang relevan di dalam \textit{cache}.
+Tabel \ref{tab:comparison_all} menyajikan rangkuman lengkap kinerja
+seluruh metode.
+Nilai negatif pada \textit{Delta Miss Ratio} menandakan perbaikan
+(penurunan miss),
+sedangkan nilai positif menandakan degradasi kinerja.
 
-\section{Hasil Pengujian Awal}
-\label{sec:hasil_pengujian_awal}
-
-Hingga tahap ini, penulis telah berhasil menyelesaikan beberapa
-tonggak penting. Perangkat lunak simulasi untuk akuisisi data dari
-\textit{trace} telah berhasil dikembangkan. Selain itu, skrip Python
-untuk memproses dan memvisualisasikan data yang dihasilkan juga telah
-dibuat, memungkinkan analisis yang lebih cepat dan interaktif.
-
-\subsection{Hasil Eksperimen Offline CLOCK}
-Eksperimen awal dilakukan dengan menggunakan algoritma Offline CLOCK
-pada \textit{trace} Meta Key-Value untuk menetapkan batas atas
-kinerja. Hasil dari simulasi ini, seperti yang ditunjukkan pada
-Gambar \ref{fig:hasil_offline_clock}, menunjukkan adanya penurunan
-drastis pada jumlah promosi dan juga pada \textit{miss ratio}.
-Penurunan yang signifikan ini merupakan indikasi kuat bahwa pada
-implementasi standar algoritma CLOCK, terjadi banyak sekali promosi
-yang sia-sia (\textit{wasted promotions}). Promosi ini tidak hanya
-membuang sumber daya komputasi, tetapi juga berpotensi "mengotori"
-\textit{cache} dengan objek-objek yang sebenarnya tidak akan diakses kembali.
-
-\begin{figure}[H]
+\begin{table}[htbp]
   \centering
-  \includegraphics[scale=0.4]{gambar/offline.png}
-  \caption{Grafik hasil dari simulasi Offline CLOCK pada
-  \textit{trace} Meta Key-Value.}
-  \label{fig:hasil_offline_clock}
+  \caption{Perbandingan Komprehensif: ML-CLOCK vs. Referensi}
+  \label{tab:comparison_all}
+  \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llcc@{}}
+      \toprule
+      \textbf{Ukuran Cache} & \textbf{Metode} & \textbf{Delta Miss
+      Ratio} & \textbf{Reduksi Promosi} \\
+      \midrule
+      \multirow{3}{*}{1\%}
+      & ML-CLOCK (Usulan) & -0.05\% & 10\% \\
+      & Optimal Zipf & \textbf{-0.20\%} & 10\% \\
+      & Offline CLOCK & -0.35\% & 40\% \\
+      \midrule
+      \multirow{3}{*}{10\%}
+      & ML-CLOCK (Usulan) & -0.10\% & 10\% \\
+      & Optimal Zipf & \textbf{-0.90\%} & 13\% \\
+      & Offline CLOCK & -1.80\% & 43\% \\
+      \midrule
+      \multirow{3}{*}{20\%}
+      & ML-CLOCK (Usulan) & -0.20\% & 10\% \\
+      & Optimal Zipf & \textbf{-1.67\%} & 15\% \\
+      & Offline CLOCK & -3.50\% & 43\% \\
+      \midrule
+      \multirow{3}{*}{40\%}
+      & ML-CLOCK (Usulan) & +0.15\% (Regresi) & 8\% \\
+      & Optimal Zipf & \textbf{-3.30\%} & 17\% \\
+      & Offline CLOCK & -8.00\% & 43\% \\
+      \bottomrule
+    \end{tabular}%
+  }
+\end{table}
+
+\section{Analisis Karakteristik Algoritma Pembanding}
+
+Untuk menempatkan kinerja ML-CLOCK dalam perspektif yang objektif,
+karakteristik fundamental dari ketiga algoritma pembanding harus
+dipahami sebagai berikut:
+
+\subsection{Optimal Zipf Promotion (Oracle Heuristik)}
+Strategi ini bertindak sebagai algoritma \textit{Oracle} yang "curang" karena
+memanfaatkan \textbf{pengetahuan masa depan yang lengkap} mengenai
+distribusi data.
+Algoritma ini secara eksplisit membaca identitas objek
+(\texttt{objectId}) dan hanya mempromosikan
+objek yang diketahui berada di puncak kurva popularitas Zipfian.
+Dalam skenario dunia nyata, sistem tidak memiliki akses ke "kunci jawaban"
+berupa distribusi probabilitas global ini.
+Oleh karena itu, Optimal Zipf memberikan batas kinerja heuristik yang
+sangat tinggi
+namun tidak praktis untuk implementasi nyata.
+
+\subsection{Offline CLOCK (Batas Atas Teoretis)}
+Offline CLOCK merupakan representasi dari kesempurnaan teoretis
+(mirip dengan algoritma Belady's OPT).
+Algoritma ini bekerja dengan cara memindai seluruh \textit{trace}
+akses di masa depan sebelum simulasi dimulai.
+Keputusan promosi diambil dengan logika deterministik sempurna:
+sebuah objek hanya akan dipromosikan jika dan hanya jika objek tersebut
+dipastikan akan diakses kembali (\textit{hit}) sebelum waktu
+penggusurannya tiba.
+Kesenjangan kinerja yang masif antara ML-CLOCK dan Offline CLOCK
+(43\% reduksi promosi)
+menunjukkan batas fisik maksimal yang bisa dicapai jika prediksi masa
+depan memiliki akurasi 100\%.
+
+\subsection{CLOCK Standar (Baseline)}
+Algoritma ini mewakili pendekatan konvensional tanpa kecerdasan buatan.
+Ia bekerja secara reaktif murni berdasarkan prinsip \textit{Recency} (kebaruan).
+Kelemahan fatalnya adalah ketidakmampuan membedakan objek populer dengan objek
+yang hanya lewat sekali (\textit{one-hit wonders}).
+Akibatnya, CLOCK Standar sering melakukan promosi yang sia-sia
+(\textit{wasted promotions}),
+yang memboroskan siklus penulisan memori dan mencemari \textit{cache}
+dengan data sampah.
+
+\section{Evaluasi Model Machine Learning}
+
+Meskipun kalah dari strategi Oracle dan Offline yang memiliki
+pengetahuan masa depan,
+model ML-CLOCK menunjukkan karakteristik kinerja yang spesifik
+sebagai solusi \textit{online}:
+
+\begin{enumerate}
+  \item \textbf{Efektivitas Terbatas pada Cache Kecil:}
+    Pada ukuran 1\% hingga 20\%, model berhasil memberikan kontribusi positif
+    meskipun marjinal. Penurunan \textit{miss ratio} sebesar 0.05\% -- 0.20\%
+    membuktikan bahwa model mampu belajar membedakan objek \textit{wasted}.
+
+  \item \textbf{Kegagalan Generalisasi pada Cache Besar:}
+    Pada ukuran 40\%, terjadi regresi kinerja yang signifikan.
+    Ambang batas (\textit{threshold}) klasifikasi model mungkin kurang adaptif
+    untuk kapasitas penyimpanan yang sangat besar.
+
+  \item \textbf{Peran Vital Bobot dan Threshold:}
+    Tanpa penerapan bobot \textit{loss} kecil (0.5) untuk kelas \texttt{wasted}
+    dan ambang batas prediksi tinggi (0.6 -- 0.8), model menjadi terlalu agresif
+    menolak promosi (\textit{aggressive eviction}).
+    Mekanisme kontrol ini mencegah model membuang terlalu banyak objek potensial
+    yang akan menghancurkan kinerja \textit{miss ratio}.
+\end{enumerate}
+
+% --- Template Gambar Cache 1% ---
+\begin{figure}[htbp]
+  \centering
+  % Ganti 'nama_file_gambar_1.png' dengan file Anda
+  \includegraphics[width=0.8\textwidth]{gambar/hasil/cache_size_0_01.png}
+  \caption{Perbandingan Miss Ratio dan Total Promosi pada Ukuran Cache 1\%}
+  \label{fig:res_1pct}
 \end{figure}
 
-\subsection{Hasil Pengembangan Model Awal}
-Pada tahap pengembangan model, penulis telah melakukan eksperimen
-awal dengan model regresi logistik (\textit{logistic regression}).
-Model ini dipilih karena kesederhanaannya dan kemampuannya untuk
-diinterpretasikan. Bobot dan ambang batas (\textit{threshold}) dari
-model ini telah disesuaikan untuk mendapatkan hasil yang optimal pada
-data validasi. Hasil dari model ini dapat dilihat pada Gambar
-\ref{fig:hasil_model_lr}.
-
-\begin{figure}[H]
+% --- Template Gambar Cache 10% ---
+\begin{figure}[htbp]
   \centering
-  \includegraphics[scale=0.4]{gambar/res.png}
-  \caption{Grafik perbandingan hasil dari model regresi logistik.}
-  \label{fig:hasil_model_lr}
+  % Ganti 'nama_file_gambar_10.png' dengan file Anda
+  \includegraphics[width=0.8\textwidth]{gambar/hasil/cache_size_0_1.png}
+  \caption{Perbandingan Miss Ratio dan Total Promosi pada Ukuran Cache 10\%}
+  \label{fig:res_10pct}
 \end{figure}
 
-Gambar \ref{fig:hasil_model_lr} menunjukkan perbandingan rata-rata
-pengurangan jumlah promosi dan perubahan pada \textit{miss ratio}
-setelah penerapan model. Seperti yang terlihat, jumlah promosi
-berhasil dikurangi secara signifikan, sekitar \textbf{10\%},
-sementara pada saat yang sama, \textit{miss ratio} tidak terlalu
-terpengaruh dan tetap stabil. Hasil awal ini sangat menjanjikan dan
-selaras dengan tujuan utama penelitian, yaitu mengurangi promosi
-tanpa mengorbankan \textit{hit ratio}.
+% --- Template Gambar Cache 20% ---
+\begin{figure}[htbp]
+  \centering
+  % Ganti 'nama_file_gambar_20.png' dengan file Anda
+  \includegraphics[width=0.8\textwidth]{gambar/hasil/cache_size_0_2.png}
+  \caption{Perbandingan Miss Ratio dan Total Promosi pada Ukuran Cache 20\%}
+  \label{fig:res_20pct}
+\end{figure}
 
+% --- Template Gambar Cache 40% ---
+\begin{figure}[htbp]
+  \centering
+  % Ganti 'nama_file_gambar_40.png' dengan file Anda
+  \includegraphics[width=0.8\textwidth]{gambar/hasil/cache_size_0_4.png}
+  \caption{Perbandingan Miss Ratio dan Total Promosi pada Ukuran Cache 40\%}
+  \label{fig:res_40pct}
+\end{figure}
+
+\section{Analisis Fitur dan Konfigurasi Model}
+
+Model terbaik yang dihasilkan menggunakan kombinasi fitur frekuensi
+(\texttt{lifetime\_freq}, \texttt{cache\_freq}) dan kebaruan
+(\texttt{vtime\_since\_access}).
+Penting dicatat bahwa konfigurasi ambang batas tinggi (0.6 -- 0.8) berfungsi
+sebagai mekanisme pertahanan (\textit{safeguard}).
+Model memiliki bias inheren untuk mengklasifikasikan objek sebagai
+\texttt{wasted}.
+Tanpa ambang batas yang ketat ini, sistem akan mengalami \textit{over-eviction},
+di mana penghematan promosi mungkin melonjak drastis, namun dibayar mahal
+dengan degradasi performa layanan (\textit{miss ratio}).

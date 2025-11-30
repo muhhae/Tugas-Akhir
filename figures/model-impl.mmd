@@ -1,0 +1,7 @@
+graph TD
+  A[Tail dari Queue] --> B{Pernah diakses?}
+  B -- Tidak --> C
+  B -- Ya --> D(Model) --> E[Output: 0 - 1]
+  E --> F{Lebih dari batas minimal?}
+  F -- Ya --> C[Keluarkan / eviction]
+  F -- Tidak --> G[Masukkan ke Head / Reinsertion]

@@ -1,11 +1,43 @@
 \chapter{METODOLOGI}
 \label{chap:perancangan_implementasi}
-
 Bab ini merinci metodologi yang digunakan dalam penelitian ini, mulai
 dari datasets, perancangan dan pengembangan perangkat lunak simulasi, proses
 pengumpulan dan pengolahan data, hingga implementasi dan evaluasi
 model \textit{machine learning}.
 \section{Datasets}
+Dalam penelitian ini, penulis menggunakan dataset berupa trace
+sintetis yang mengikuti distribusi Zipfian. Pemilihan distribusi
+Zipfian ini didasarkan pada karakteristiknya yang sangat menyerupai
+pola akses pada web trace di dunia nyata, di mana sebagian kecil
+konten diakses jauh lebih sering dibandingkan sisanya (popularitas
+yang tidak merata)~\cite{Breslau1999Web}.
+
+Seluruh dataset dibuat secara prosedural menggunakan utilitas skrip
+dari pustaka libCacheSim. Pendekatan ini dipilih penulis karena
+menawarkan fleksibilitas yang lebih baik dibandingkan menggunakan log
+server mentah. Dengan menggunakan data sintetis, penulis dapat
+menghilangkan noise atau gangguan yang sering terdapat pada data
+riil, serta memiliki kontrol penuh terhadap parameter distribusi
+untuk mensimulasikan berbagai kondisi beban kerja yang spesifik.
+
+Secara struktural, dataset ini disimpan menggunakan format
+oracleGeneral. Dalam format ini, data disusun sebagai urutan akses di
+mana setiap entri merepresentasikan satu permintaan. Komponen utama
+dalam struktur ini adalah kolom object\_id, yang berisi identifikasi
+numerik unik untuk setiap objek yang diminta. Format ini memastikan
+kompatibilitas langsung dengan simulator tanpa memerlukan langkah
+pra-pemrosesan yang kompleks.
+
+Untuk keperluan eksperimen, penulis membuat beberapa set trace
+Zipfian yang berbeda secara terpisah. Pembagian antara data untuk
+pelatihan (training) dan pengujian (testing) dilakukan secara ketat
+dan berbeda file. Hal ini krusial untuk memastikan bahwa evaluasi
+performa model dilakukan pada pola akses baru yang belum pernah
+dilihat sebelumnya. Tujuannya adalah untuk menguji kemampuan
+generalisasi sistem dalam menangani trafik, bukan sekadar kemampuan
+model dalam menghafal urutan data latih.
+\section{Pengembangan Perangkat Lunak Simulasi}
+Langkah pertama dalam penelitian ini adalah pengembangan perangkat
 lunak simulasi kustom yang mampu memenuhi kebutuhan analisis.
 Perangkat lunak ini dirancang dengan beberapa persyaratan utama:
 \begin{enumerate}
@@ -37,122 +69,233 @@ ditulis dalam bahasa C/C++, yang menjamin kinerja komputasi yang
 sangat efisien, terutama untuk tugas-tugas berat seperti pengumpulan
 data dari \textit{trace} berukuran besar.
 
-\begin{figure}[H]
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=0.6\textwidth]{gambar/alur-program.png}
+  \includegraphics[width=0.6\textwidth]{figures/alur-program.mmd.pdf}
   \caption{Diagram alur dari program simulasi yang dikembangkan.}
   \label{fig:alur_program}
 \end{figure}
 
-\section{Pengumpulan Data}
+\section{Pengumpulan Data dan Labelling}
 Pengumpulan data awal dilakukan sepenuhnya menggunakan perangkat
-lunak simulasi yang telah dikembangkan. Tujuannya adalah untuk
-mendapatkan metrik kinerja dasar seperti jumlah promosi dan
-\textit{miss ratio} dari algoritma CLOCK standar. Selain itu, pada
-fase ini juga dilakukan pembuatan dataset yang akan digunakan untuk
-melatih model \textit{machine learning}. Dataset ini dibuat dengan
-cara mencatat (me-\textit{logging}) metadata dari setiap objek pada
-saat keputusan promosi akan dibuat, lalu memberinya label `wasted`
-atau `not wasted` berdasarkan informasi dari simulasi Offline CLOCK.
+lunak simulasi yang telah dikembangkan.
+Penulis menjalankan simulasi ini dengan tujuan utama untuk
+mendapatkan metrik kinerja dasar
+seperti jumlah promosi total dan \textit{miss ratio} yang dihasilkan
+oleh algoritma CLOCK standar.
+Angka-angka ini berfungsi sebagai \textit{baseline} untuk mengukur
+efektivitas model yang diusulkan nantinya.
 
-\textit{Trace} yang digunakan dalam penelitian ini adalah
-\textit{trace} sumber terbuka yang juga digunakan oleh
-penelitian-penelitian sebelumnya di bidang ini. \textit{Trace} ini
-mencakup berbagai jenis beban kerja (\textit{workload}) yang
-realistis, seperti \textit{BlockStore}, \textit{KVStorage}, CDN,
-\textit{Proxy}, dan \textit{Photo Storage}, yang berasal dari
-berbagai institusi teknologi terkemuka seperti Twitter, Meta,
-Tencent, dan Alibaba. Selain itu, penulis juga menggunakan
-\textit{trace} sintetis yang dibuat berdasarkan distribusi Zipfian
-untuk mempermudah pemahaman pola data dalam lingkungan yang lebih terkontrol.
+Bersamaan dengan simulasi baseline tersebut, penulis melakukan proses
+pembuatan dataset
+yang akan digunakan untuk melatih model \textit{machine learning}.
+Dataset ini disusun dengan cara mencatat (\textit{logging}) metadata
+relevan dari setiap objek
+tepat pada saat objek tersebut menjadi kandidat untuk keputusan promosi.
+Fitur-fitur yang dicatat meliputi statistik akses masa lalu dan
+status objek dalam antrian saat itu.
 
-\section{Pengolahan dan Analisis Data}
-Untuk mempermudah proses analisis, penulis mengembangkan beberapa
-skrip Python. Skrip ini bertugas untuk mengolah data mentah dari
-format CSV, melakukan plotting data menggunakan pustaka seperti
-Plotly dan Pandas, dan menyajikannya dalam sebuah laporan HTML
-interaktif. Visualisasi ini sangat membantu dalam mengidentifikasi
-pola, korelasi, dan anomali dalam data sebelum tahap pengembangan model.
+Pemberian label pada setiap sampel data dilakukan dengan merujuk pada
+simulasi \textit{Offline CLOCK}
+yang dijalankan setelahnya.
+Karena \textit{Offline CLOCK} memiliki visibilitas terhadap seluruh
+\textit{trace} masa depan,
+algoritma ini dapat menentukan keputusan optimal secara retrospektif.
+Penulis memberikan label \texttt{wasted} pada objek yang dipromosikan
+tetapi tidak memberikan \textit{hit}
+sebelum akhirnya dikeluarkan (\textit{evict}) kembali dari cache.
+Sebaliknya, label \texttt{not wasted} diberikan jika promosi tersebut
+terbukti berguna dan menghasilkan \textit{hit}.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.6\textwidth]{gambar/datasets-figures.png}
-  \caption{Contoh visualisasi distribusi dari metadata \texttt{lifetime\_freq}.}
-  \label{fig:distribusi_metadata}
-\end{figure}
+% \section{Pengolahan dan Analisis Data}
+% Untuk mempermudah proses analisis, penulis mengembangkan beberapa
+% skrip Python. Skrip ini bertugas untuk mengolah data mentah dari
+% format CSV, melakukan plotting data menggunakan pustaka seperti
+% Plotly dan Pandas, dan menyajikannya dalam sebuah laporan HTML
+% interaktif. Visualisasi ini sangat membantu dalam mengidentifikasi
+% pola, korelasi, dan anomali dalam data sebelum tahap pengembangan model.
+%
+% \begin{figure}[h!]
+%   \centering
+%   \includegraphics[width=0.8\textwidth]{gambar/datasets-figures.png}
+%   \caption{Contoh visualisasi distribusi dari metadata
+% \texttt{lifetime\_freq}.}
+%   \label{fig:distribusi_metadata}
+% \end{figure}
 
 \section{Pengembangan Model Machine Learning}
-Dengan menggunakan dataset yang telah diolah, sebuah model
-\textit{machine learning} dikembangkan. Model ini dirancang untuk
-menerima masukan berupa metadata objek (seperti frekuensi akses,
-waktu sejak akses terakhir, ukuran objek, dll.) dan menghasilkan
-keluaran berupa probabilitas (nilai antara 0 hingga 1) yang
-mengindikasikan kelayakan objek tersebut untuk dipromosikan. Nilai
-yang tinggi menandakan bahwa objek tersebut kemungkinan besar tidak
-layak untuk dipromosikan.
+Berdasarkan dataset terlabel yang telah disiapkan sebelumnya,
+penulis mengembangkan sebuah model \textit{machine learning} sebagai
+mesin inferensi utama.
+Model ini didesain secara spesifik untuk memproses vektor fitur yang diekstraksi
+dari metadata objek secara \textit{real-time} tanpa membebani latensi sistem.
+Variabel masukan yang digunakan meliputi frekuensi akses historis,
+durasi waktu sejak akses terakhir atau \textit{recency}, serta ukuran
+objek dalam byte.
 
-\begin{figure}[H]
+Sebagai keluaran, model menghasilkan skor probabilitas kontinu dengan
+rentang nilai antara 0 hingga 1.
+Dalam konteks klasifikasi biner ini, nilai probabilitas ditafsirkan
+sebagai tingkat keyakinan
+terhadap label \texttt{wasted}.
+Artinya, nilai keluaran yang mendekati 1 mengindikasikan prediksi
+kuat bahwa objek tersebut
+tidak akan memberikan manfaat atau \textit{hit} jika dipromosikan ke
+\textit{cache} utama.
+Sebaliknya, nilai yang rendah menandakan bahwa objek tersebut
+memiliki potensi utilitas yang tinggi
+dan layak untuk mendapatkan promosi.
+
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=0.4\textwidth]{gambar/ml-diagrams.png}
+  \includegraphics[width=0.35\textwidth]{figures/ml-diagrams.mmd.pdf}
   \caption{Diagram proses pelatihan model \textit{machine learning}.}
   \label{fig:proses_pelatihan}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=0.8\textwidth]{gambar/model-arch.png}
+  \includegraphics[width=0.8\textwidth]{figures/model-arch.mmd.pdf}
   \caption{Arsitektur model \textit{machine learning} yang digunakan.}
   \label{fig:arsitektur_model}
 \end{figure}
 
 \section{Implementasi Model pada Perangkat Lunak Simulasi}
-Model \textit{machine learning} yang telah dilatih kemudian
-diimplementasikan kembali ke dalam perangkat lunak simulasi. Untuk
-menjembatani antara lingkungan Python (untuk pelatihan) dan C++
-(untuk simulasi), model diekspor ke dalam format \textbf{ONNX (Open
-Neural Network Exchange)}. Model dalam format ONNX ini kemudian
-dijalankan di dalam simulator menggunakan \textbf{ONNX Runtime},
-sebuah \textit{inference engine} berkinerja tinggi. Di dalam fungsi
-\textit{eviction} pada algoritma CLOCK, sebelum sebuah objek
-dipromosikan, metadatanya akan diekstrak dan dijadikan masukan untuk
-model. Jika keluaran dari model melebihi ambang batas
-(\textit{threshold}) yang telah ditentukan, objek tersebut akan
-langsung digusur alih-alih dipromosikan.
+Setelah tahap pelatihan selesai, model \textit{machine learning} yang dihasilkan
+diintegrasikan kembali ke dalam perangkat lunak simulasi untuk
+pengujian kinerja.
+Tantangan teknis utama pada tahap ini adalah menjembatani perbedaan
+lingkungan antara
+proses pelatihan yang berbasis Python dengan lingkungan simulasi yang
+ditulis dalam C++
+demi efisiensi memori dan waktu eksekusi.
+Solusi yang diterapkan penulis adalah dengan mengekspor model
+tersebut ke dalam format
+\textbf{ONNX (Open Neural Network Exchange)}.
+Format ini dipilih karena standar interoperabilitasnya yang tinggi,
+memungkinkan model
+yang dilatih pada \textit{framework} tingkat tinggi untuk dijalankan
+pada lingkungan
+C++ tanpa perlu menulis ulang logika model secara manual.
 
-\begin{figure}[H]
+Eksekusi model di dalam simulator dilakukan menggunakan \textbf{ONNX Runtime},
+sebuah \textit{inference engine} yang dioptimalkan untuk kinerja
+tinggi dan latensi rendah.
+Secara arsitektural, modul inferensi ini ditanamkan langsung ke dalam
+logika internal algoritma CLOCK,
+spesifiknya pada fungsi yang menangani mekanisme \textit{eviction} dan promosi.
+Setiap kali sistem mempertimbangkan sebuah objek untuk dipromosikan
+ke segmen memori utama,
+simulator secara \textit{real-time} mengekstrak metadata objek
+tersebut dan mengubahnya
+menjadi tensor input yang sesuai dengan spesifikasi model ONNX.
+
+Keputusan akhir ditentukan berdasarkan perbandingan antara keluaran model dengan
+nilai ambang batas (\textit{threshold}) sensitivitas yang telah
+dikonfigurasi sebelumnya.
+Model menghasilkan skor probabilitas yang merepresentasikan kecenderungan objek
+untuk menjadi \texttt{wasted}.
+Jika skor probabilitas ini melampaui ambang batas, sistem akan
+mengambil tindakan preventif
+dengan menggagalkan promosi dan langsung menggusur objek tersebut
+(\textit{bypass}).
+Mekanisme ini bertujuan untuk mencegah polusi \textit{cache} oleh objek-objek
+yang diprediksi tidak akan memberikan keuntungan kinerja di masa depan.
+
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=0.6\textwidth]{gambar/model-impl.png}
+  \includegraphics[width=0.6\textwidth]{figures/model-impl.mmd.pdf}
   \caption{Diagram alur implementasi model pada simulator.}
   \label{fig:implementasi_model}
 \end{figure}
 
 \section{Evaluasi Model}
-Tahap terakhir adalah evaluasi kinerja model yang telah terintegrasi.
-Kinerja algoritma CLOCK yang telah dimodifikasi dengan
-\textit{machine learning} ini kemudian dibandingkan secara langsung
-dengan algoritma CLOCK standar dan tolok ukur teoretis dari Offline
-CLOCK. Metrik utama yang menjadi fokus perbandingan adalah jumlah
-total promosi dan \textit{miss ratio}.
+Tahap final dari rangkaian penelitian ini adalah evaluasi
+komprehensif terhadap kinerja model
+yang telah diintegrasikan ke dalam simulator.
+Untuk mengukur efektivitas solusi yang diusulkan,
+penulis melakukan perbandingan langsung (\textit{benchmarking})
+antara algoritma CLOCK yang dimodifikasi dengan tiga standar referensi utama.
+
+Referensi pertama adalah algoritma CLOCK standar tanpa modifikasi.
+Ini berfungsi sebagai \textit{baseline} untuk melihat peningkatan kinerja riil
+dibandingkan metode konvensional yang ada saat ini.
+Referensi kedua adalah \textit{Offline CLOCK},
+sebuah algoritma teoretis yang diasumsikan memiliki pengetahuan
+sempurna akan masa depan.
+Perbandingan ini krusial untuk mengetahui seberapa dekat kinerja model prediksi
+dengan batas optimal yang mungkin dicapai (\textit{upper bound}).
+
+Referensi ketiga adalah strategi \textit{Optimal Zipf Promotion}.
+Metode ini memanfaatkan pengetahuan \textit{oracle} mengenai
+distribusi popularitas global dataset.
+Dalam strategi ini, promosi hanya diberikan kepada sebagian kecil objek
+yang berada di puncak kurva popularitas Zipfian (objek-objek terpopuler).
+Perbandingan ini bertujuan untuk memverifikasi apakah strategi
+berbasis popularitas statis
+sudah cukup efisien, atau apakah pendekatan dinamis berbasis
+\textit{machine learning}
+mampu menangkap pola akses yang lebih kompleks yang terlewatkan oleh
+metrik popularitas semata.
+
+Metrik evaluasi difokuskan pada dua indikator utama.
+Indikator pertama adalah \textit{miss ratio},
+yang merepresentasikan efisiensi dasar \textit{cache} dalam melayani
+permintaan pengguna.
+Indikator kedua adalah jumlah total promosi ke segmen utama.
+Metrik ini menjadi fokus khusus karena berkorelasi lurus dengan
+operasi tulis (\textit{write operations}).
+Keberhasilan model didefinisikan sebagai kemampuannya menekan jumlah
+promosi secara signifikan
+untuk menghemat \textit{bandwidth} dan umur perangkat,
+tanpa menyebabkan degradasi yang berarti pada \textit{miss ratio}.
 
 \section{Perangkat Keras dan Lunak}
-Penelitian ini didukung oleh beberapa perangkat keras dan lunak sebagai berikut:
-\section{Perangkat Keras}
-\begin{enumerate}
-  \item \textbf{Testbed Utama:} Sebuah PC server dengan prosesor
-    Intel Xeon Silver 4114 (40 \textit{cores}) @ 3.000GHz dan RAM
-    sebesar 192 GiB.
-  \item \textbf{Laptop Pribadi:} Digunakan untuk pengembangan dan analisis awal.
-\end{enumerate}
-\section{Perangkat Lunak}
-\begin{enumerate}
-  \item \textbf{Python:} Bahasa pemrograman utama untuk pengolahan
-    data dan pengembangan model.
-  \item \textbf{Plotly \& Pandas:} Pustaka Python untuk analisis dan
-    visualisasi data.
-  \item \textbf{C++:} Bahasa pemrograman utama untuk perangkat lunak simulasi.
-  \item \textbf{libCacheSim:} Pustaka dasar untuk simulator \textit{cache}.
-  \item \textbf{ONNX Runtime:} Untuk menjalankan inferensi model di
-    lingkungan C++.
-  \item \textbf{SSH:} Untuk mengakses dan mengelola \textit{testbed}
-    dari jarak jauh.
-\end{enumerate}
+
+Penelitian ini didukung oleh infrastruktur komputasi dan tumpukan
+perangkat lunak sebagai berikut:
+
+\subsection{Perangkat Keras}
+\begin{description}
+  \item[Testbed Utama]
+    PC server berkinerja tinggi yang ditenagai oleh prosesor Intel
+    Xeon Silver 4114
+    (40 \textit{logical cores} @ 3.00 GHz) dan memori RAM sebesar 192 GiB.
+    Perangkat ini didedikasikan untuk menjalankan simulasi paralel yang intensif
+    dan memuat dataset \textit{trace} berukuran besar ke dalam memori.
+
+  \item[Unit Pengembangan Lokal]
+    Laptop pribadi yang digunakan untuk tahap pengembangan kode awal,
+    \textit{prototyping}, serta analisis hasil pasca-simulasi.
+\end{description}
+
+\subsection{Perangkat Lunak}
+\begin{description}
+  \item[C++23]
+    Bahasa pemrograman utama untuk implementasi simulator.
+    Dipilih untuk memaksimalkan efisiensi eksekusi waktu nyata dan
+    kontrol memori tingkat rendah.
+
+  \item[Python 3.13]
+    Bahasa skrip yang digunakan untuk orkestrasi eksperimen,
+    pemrosesan data awal (\textit{preprocessing}),
+    serta pelatihan model \textit{machine learning}.
+
+  \item[libCacheSim]
+    Pustaka simulator \textit{cache} yang menjadi fondasi dasar
+    pengembangan sistem,
+    menyediakan implementasi struktur data \textit{cache} yang efisien.
+
+  \item[ONNX Runtime]
+    Mesin inferensi (\textit{inference engine}) berkinerja tinggi
+    yang digunakan untuk
+    menjalankan model prediksi di dalam lingkungan C++ dengan latensi minimal.
+
+  \item[Pandas \& Plotly]
+    Pustaka Python yang digunakan untuk analisis statistik dataset
+    dan visualisasi data hasil eksperimen.
+
+  \item[OpenSSH]
+    Digunakan untuk akses jarak jauh, manajemen \textit{job},
+    dan transfer data antara unit lokal dan \textit{testbed}.
+\end{description}

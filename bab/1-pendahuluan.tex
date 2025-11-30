@@ -56,7 +56,7 @@ yang ada~\cite{Eklöv2011Fast, Calandrino2009On, Seo2009Design}. Dalam
 lingkungan seperti ini, beberapa inti prosesor sering
 kali mengakses dan memodifikasi data \textit{cache} yang sama secara
 bersamaan, yang dapat menyebabkan kondisi balapan (\textit{race
-conditions}) dan inkonsistensi data ~\cite{Herlihy2006The}. Untuk
+conditions}) dan inkonsistensi data~\cite{Herlihy2006The}. Untuk
 menjaga kebenaran data,
 sebagian besar implementasi \textit{cache} tradisional menekankan
 penggunaan kunci (\textit{locks}) selama operasi penyisipan, promosi,
@@ -78,7 +78,7 @@ informasi kebaruan data secara presisi, yang meningkatkan
 lebih sederhana seperti \textbf{First-In First-Out (FIFO)} sering
 kali lebih disukai karena skalabilitasnya dan biaya sinkronisasi yang
 lebih rendah, karena hampir tidak memerlukan
-\textit{locking}`\cite{Dan1990An, Moir2005Using, Molnar2002A}.
+\textit{locking}~\cite{Dan1990An, Moir2005Using, Molnar2002A}.
 
 Untuk mengatasi keterbatasan LRU dan FIFO, algoritma \textbf{CLOCK}
 dikembangkan sebagai aproksimasi dari LRU yang tetap mempertahankan
@@ -97,8 +97,8 @@ skalabilitas serta kesederhanaan yang menjadi ciri khas
 FIFO~\cite{chen2025lazy}.
 
 Namun, terlepas dari keunggulannya, algoritma CLOCK masih mengalami
-masalah promosi yang tidak perlu
-\cite{Eads2014NbQCLOCK,chen2025lazy}. Karena setiap akses akan mengatur
+masalah promosi yang tidak
+perlu~\cite{Eads2014NbQCLOCK,chen2025lazy}. Karena setiap akses akan mengatur
 bit referensi tanpa memandang frekuensi atau kepentingan akses,
 bahkan akses tunggal atau yang jarang terjadi dapat mencegah sebuah
 entri untuk digusur. Akibatnya, \textit{cache} dapat mempertahankan
