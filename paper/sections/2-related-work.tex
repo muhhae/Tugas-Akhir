@@ -1,0 +1,82 @@
+\section{Related Work}
+
+The landscape of cache replacement policies has evolved from simple
+static heuristics to complex, adaptive algorithms, and recently, to
+machine learning-augmented systems. Research typically optimizes for
+two often conflicting goals: maximizing the hit ratio (scan
+resistance) and minimizing implementation overhead (concurrency and
+scalability).
+
+\subsection{Classical Replacement and Scalability}
+The Least Recently Used (LRU) algorithm has historically been the
+baseline for replacement policies due to its exploitation of temporal
+locality \cite{Denning2005Locality}. However, exact LRU requires a
+doubly-linked list update on every cache access. In modern multicore
+processors, the fine-grained locking required to protect this
+structure results in severe contention, limiting system throughput
+\cite{Herlihy2006The}.
+
+To address scalability, the CLOCK algorithm approximates LRU using a
+circular buffer and reference bits, eliminating the need for list
+manipulation on hits. Eads et al. further refined this for
+high-concurrency environments with \textbf{NbQ-CLOCK} (Non-blocking
+Queue CLOCK) \cite{Eads2014NbQCLOCK}. NbQ-CLOCK replaces the circular
+buffer with a concurrent, lock-free queue, allowing for high
+throughput. However, both standard CLOCK and NbQ-CLOCK suffer from
+``blind promotion,'' where any accessed item is granted a second
+chance. This makes them susceptible to cache pollution during scan
+operations (sequences of ``one-hit wonders''), which displace
+high-utility data \cite{Jiang2005CLOCKPro}.
+
+\subsection{Scan Resistance and Advanced Heuristics}
+To mitigate cache pollution caused by scans and Zipfian long-tail
+distributions \cite{Breslau1999Web}, several heuristics were
+developed to separate frequency from recency.
+
+\textbf{LIRS} (Low Inter-reference Recency Set) utilizes the
+Inter-Reference Recency (IRR) between the last two accesses to
+predict future utility, effectively filtering out items with weak
+locality \cite{Jiang2002LIRS}. \textbf{ARC} (Adaptive Replacement
+Cache) dynamically balances recency and frequency by maintaining two
+lists and adapting their size based on workload shifts \cite{Megiddo2003ARC}.
+
+Building on these concepts, \textbf{CAR} (Clock with Adaptive
+Replacement) adapts the self-tuning benefits of ARC to the more
+efficient CLOCK structure \cite{Bansal2004CAR}. Similarly,
+\textbf{CLOCK-Pro} introduces a ``test period'' for cold pages; items
+are not promoted to the protected segment immediately upon insertion
+but must demonstrate reuse within a test window
+\cite{Jiang2005CLOCKPro}. While these algorithms improve scan
+resistance, they rely on static rules that may not adapt quickly
+enough to the complex, non-stationary patterns of modern AI and web
+workloads \cite{Zhang2025Rethinking}.
+
+\subsection{Machine Learning in Caching}
+The complexity of modern access patterns has motivated the
+integration of Machine Learning (ML) into cache management.
+\textbf{LeCaR} (Learning Cache Replacement) employs Reinforcement
+Learning (RL) using regret minimization to dynamically weight two
+underlying policies (LRU and LFU) \cite{Vietri2018LeCaR}. While LeCaR
+adapts to phase changes, it essentially selects between existing
+static policies rather than predicting individual item utility.
+
+Recent work has focused on ``lightweight'' ML to minimize inference
+latency in real-time systems. Berger et al. demonstrated that
+object-level features (e.g., size, type) could be used to predict hit
+probabilities in CDNs \cite{Berger2018Towards}. More recently, the
+importance of the \textit{promotion} path—deciding what enters the
+cache—has gained attention. Chen et al. explored \textbf{lazy
+promotion}, showing that deferring promotion decisions can
+significantly reduce the churn caused by low-utility items
+\cite{chen2025lazy}. Similarly, modern FIFO-based approaches like
+\textbf{S3-FIFO} argue that simple queues with intelligent promotion
+thresholds can outperform complex LRU variants \cite{Yang2023S3FIFO}.
+
+\subsection{The PredCLOCK Approach}
+Different from RL-based policy selection, \textbf{PredCLOCK} utilizes
+a Supervised Learning model to act as an intelligent gatekeeper. By
+predicting reuse probability upon access, we explicitly target the
+inefficiency of blind promotion found in CLOCK and NbQ-CLOCK. This
+approach aligns with recent findings that optimizing promotion
+efficiency is often more impactful on hit ratios than optimizing
+eviction policies \cite{chen2025lazy, Zhang2024SIEVE}.

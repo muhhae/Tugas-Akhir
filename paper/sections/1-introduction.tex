@@ -1,0 +1,48 @@
+\section{Introduction}
+The fundamental challenge in modern memory hierarchies is bridging
+the latency gap between processing units and backing stores, a
+problem famously characterized as the "Memory Wall"
+\cite{Wulf1995Hitting}. To mitigate this, systems employ multi-level
+cache hierarchies where the efficiency of the Last Level Cache (LLC)
+or software-managed cache dictates overall system performance
+\cite{Prieto2011Multilevel}. In these environments, the primary goal
+of a replacement policy is to maximize the hit ratio by accurately
+identifying and retaining the workload's active "working set"
+\cite{Denning2005Locality}.
+
+While Least Recently Used (LRU) algorithms generally provide high hit
+ratios, they incur significant synchronization overhead in multi-core
+environments due to the need for fine-grained locking on every access
+\cite{Herlihy2006The}. Consequently, the CLOCK algorithm and its
+concurrent variants, such as NbQ-CLOCK, have become the standard for
+high-throughput systems \cite{Eads2014NbQCLOCK}. However, CLOCK
+relies on a coarse-grained "blind promotion" mechanism: any accessed
+item is given a "second chance" (reference bit set to 1). This
+simplicity leaves CLOCK vulnerable to cache pollution caused by scans
+or "one-hit wonders"—items accessed once and never again
+\cite{Jiang2005CLOCKPro}. When these low-utility items are blindly
+promoted, they displace high-utility data, degrading the cache's
+effective capacity and overall hit ratio.
+
+Addressing this inefficiency requires distinguishing between
+frequency and mere recency. Advanced heuristics like CAR (Clock with
+Adaptive Replacement) \cite{Bansal2004CAR} and CLOCK-Pro
+\cite{Jiang2005CLOCKPro} attempt to filter these items using history
+lists and test segments. However, modern workloads, particularly web
+traffic characterized by Zipf-like distributions, exhibit complex
+access patterns that static heuristics often fail to capture
+optimally \cite{Breslau1999Web}. Recent studies suggest that deciding
+what to keep (promotion policy) is often more critical for efficiency
+than deciding what to evict \cite{chen2025lazy, Yang2023FIFO}.
+
+In this paper, we introduce PredCLOCK (Predictive CLOCK), a mechanism
+to increase the promotion efficiency of the CLOCK algorithm. Rather
+than granting a "second chance" to every accessed item, PredCLOCK
+utilizes a lightweight Supervised Learning model to predict the reuse
+probability of an item at the moment of access. This allows the
+system to filter useless promotions, effectively acting as a
+gatekeeper that protects the cache from pollution. By leveraging
+recent advances in efficient ML inference \cite{Lin2019ONNC}, we
+demonstrate that PredCLOCK achieves higher cache utilization
+efficiency and robustness against scan-heavy workloads compared to
+standard CLOCK implementations.

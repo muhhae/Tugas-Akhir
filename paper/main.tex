@@ -1,10 +1,15 @@
+% LTeX: language=id
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first
 % footnote. If that is unneeded, please comment it out.
 %Template version as of 6/27/2024
-
+\usepackage{flushend}
+\usepackage{booktabs}
 \usepackage{cite}
+\usepackage{subcaption} % Required in your preamble
+\usepackage{placeins}
+% \usepackage[backend=biber]{biblatex}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
@@ -12,11 +17,21 @@
 \usepackage{xcolor}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\makeatletter
+\newcommand{\linebreakand}{
+\end{@IEEEauthorhalign}
+\hfill\mbox{}\par
+\mbox{}\hfill
+\begin{@IEEEauthorhalign}
+}
+\makeatother
+
 \begin{document}
 
-\title{Machine Learning-Enhanced CLOCK Cache Replacement Policy for
+\title{PredCLOCK: Machine Learning-Enhanced CLOCK Cache Replacement Policy for
   Improved Efficiency\\
-  \thanks{This work was supported by [Funding Agency, if any].}
+  % \thanks{This work was supported by [Funding Agency, if any].}
 }
 
 \author{\IEEEauthorblockN{Muhammad Haekal Muhyidin Al-Araby}
@@ -30,7 +45,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \textit{Institut Teknologi Sepuluh Nopember}\\
     Surabaya, Indonesia \\
   fuad@its.ac.id}
-  \and
+  \linebreakand
   \IEEEauthorblockN{Dr. Arief Kurniawan, S.T., M.T.}
   \IEEEauthorblockA{\textit{Department of Computer Engineering} \\
     \textit{Institut Teknologi Sepuluh Nopember}\\
@@ -41,231 +56,49 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \maketitle
 
 \begin{abstract}
-  This paper investigates the integration of machine learning into
-  the CLOCK cache replacement algorithm to enhance its efficiency by
-  reducing unnecessary object promotions. Modern computing demands
-  advanced cache management techniques, and machine learning offers a
-  promising avenue to optimize existing algorithms. We developed a
-  custom simulation software based on LibCacheSim to collect data
-  from various real-world traces and synthetic Zipfian traces. A
-  logistic regression model was trained to predict the likelihood of
-  a wasted promotion based on object metadata. This model, exported
-  in ONNX format and run with ONNX Runtime, was integrated into the
-  CLOCK algorithm. Our experimental results demonstrate that the
-  machine learning-enhanced CLOCK algorithm significantly reduces the
-  total number of promotions by approximately 10\% without a
-  substantial increase in the miss ratio. This indicates improved
-  cache management efficiency, as the system intelligently avoids
-  promoting objects that are unlikely to be re-accessed, thereby
-  preserving valuable cache space for more relevant data. The
-  findings suggest that even lightweight machine learning models can
-  provide meaningful performance improvements in classical cache
-  algorithms, paving the way for more adaptive and efficient cache systems.
+  This research focuses on the development and analysis of
+  \textbf{PredCLOCK}, a machine learning-based enhancement to the
+  CLOCK cache eviction algorithm. While the standard CLOCK algorithm
+  is widely used due to its low overhead, it suffers from the "blind
+  promotion" phenomenon, where objects with low reuse probability
+  ("one-hit wonders") are unnecessarily promoted, leading to cache
+  pollution and wasted write operations. This study aims to mitigate
+  these inefficiencies
+  by integrating a supervised learning model into the eviction
+  decision process to filter promotions based on access patterns
+  consistent with Zipfian distributions.
+  Simulations were conducted using a custom high-performance
+  framework based on \textit{LibCacheSim} under trace replay
+  scenarios. The quantitative evaluation
+  demonstrates that \textbf{PredCLOCK} achieves a consistent
+  reduction in cache promotions of approximately \textbf{8--10\%}
+  across various cache sizes compared to the standard CLOCK baseline.
+  Furthermore, the system yields an improvement in cache efficiency
+  with a reduction in Miss Ratio (up to 0.20\%) in high-pressure
+  environments (1\%--20\% cache size). Although the write efficiency
+  gains fall short of the theoretical 43\% upper bound established by
+  the \textit{Offline CLOCK} oracle, the proposed
+  approach successfully optimizes the trade-off between cache hit
+  rates and hardware endurance (write reductions) without requiring
+  future knowledge.
 \end{abstract}
 
 \begin{IEEEkeywords}
-  cache replacement, CLOCK algorithm, machine learning, logistic
-  regression, ONNX, LibCacheSim.
+  Cache Replacement, CLOCK Algorithm, Machine
+  Learning, Supervised Learning, Write Endurance, Zipfian Distribution.
 \end{IEEEkeywords}
-
-\section{Introduction}
-The rapid advancement in computing technology, particularly the shift
-towards multi-core architectures, necessitates sophisticated
-techniques for object cache management. While traditional cache
-replacement policies like Least Recently Used (LRU) and First-In
-First-Out (FIFO) have been widely used, they present challenges in
-multi-core environments due to locking overheads and suboptimal
-eviction decisions. The CLOCK algorithm, a practical approximation of
-LRU, offers a balance between low miss ratio and high scalability by
-using a circular buffer and reference bits. However, CLOCK still
-suffers from unnecessary promotions, where frequently accessed
-objects prevent less relevant items from being evicted, leading to
-inefficient cache utilization.
-
-This research explores the integration of machine learning (ML) into
-the CLOCK algorithm to mitigate these unnecessary promotions. By
-leveraging ML models to predict the utility of an object's promotion,
-we aim to enhance the CLOCK algorithm's decision-making process,
-making it more adaptive and efficient. The primary goal is to reduce
-wasted promotions without significantly increasing the cache's miss
-ratio, thereby improving overall system performance. This paper
-details the methodology, implementation, and evaluation of a machine
-learning-enhanced CLOCK cache replacement policy.
-
-\section{Related Work}
-The CLOCK algorithm, developed in the early 1970s, has been a
-cornerstone in page-replacement systems due to its lower overhead
-compared to LRU. Subsequent advancements include Clock with Adaptive
-Replacement (CAR), which dynamically balances recency and frequency
-using two separate lists, and Clock-Pro, which categorizes objects
-into Hot, Cold, and Test lists for more nuanced eviction decisions.
-These variations aim to achieve LRU-like performance with FIFO-like overheads.
-
-The application of machine learning in caching has gained traction.
-Previous studies have explored various ML techniques to predict
-object re-access probability or optimize cache policies. Our work
-builds upon this by specifically targeting the reduction of wasted
-promotions within the CLOCK algorithm using a lightweight supervised
-learning approach. We aim to demonstrate that even a simple ML model
-can significantly improve the efficiency of a well-established cache
-replacement policy.
-
-\section{Methodology}
-Our research involved developing a custom cache simulation software,
-collecting and processing data, developing a machine learning model,
-and integrating it into the simulator.
-
-\subsection{Simulation Software Development}
-A custom simulation software was developed using
-\textbf{LibCacheSim}, a C/C++ library for cache simulation. This
-software was designed to:
-\begin{enumerate}
-  \item Integrate machine learning models efficiently within the
-    cache's eviction function.
-  \item Support standard CLOCK and Offline CLOCK algorithms for
-    performance comparison.
-  \item Collect crucial data from Offline CLOCK simulations,
-    including miss ratio, promotion counts, and object metadata with
-    'wasted' or 'not wasted' labels for each promotion decision. This
-    data was exported to CSV for further analysis.
-\end{enumerate}
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.8\columnwidth]{gambar/alur-program.png}}
-  \caption{Flowchart of the developed simulation program.}
-  \label{fig:alur_program}
-\end{figure}
-
-\subsection{Data Collection and Processing}
-Initial data collection involved running standard CLOCK simulations
-to establish baseline performance metrics. Concurrently, a dataset
-for ML model training was generated by logging object metadata at the
-point of promotion decisions and labeling them based on Offline
-CLOCK's insights into wasted promotions. We utilized open-source
-traces from various real-world workloads (e.g., BlockStore,
-  KVStorage, CDN, Proxy, Photo Storage from Twitter, Meta, Tencent,
-Alibaba) and synthetic Zipfian traces. Python scripts with Plotly and
-Pandas were used for data processing, visualization, and interactive
-HTML reporting.
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.8\columnwidth]{gambar/datasets-figures.png}}
-  \caption{Example visualization of \texttt{lifetime\_freq} metadata
-  distribution.}
-  \label{fig:distribusi_metadata}
-\end{figure}
-
-\subsection{Machine Learning Model Development and Integration}
-A logistic regression model was developed using the processed
-dataset. The model takes object metadata (e.g., access frequency,
-time since last access, object size) as input and outputs a
-probability (0-1) indicating the likelihood of a wasted promotion.
-Higher values suggest a higher probability of a wasted promotion.
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.6\columnwidth]{gambar/ml-diagrams.png}}
-  \caption{Diagram of the machine learning model training process.}
-  \label{fig:proses_pelatihan}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.9\columnwidth]{gambar/model-arch.png}}
-  \caption{Architecture of the machine learning model used.}
-  \label{fig:arsitektur_model}
-\end{figure}
-
-The trained model was then integrated into the C++ simulation
-environment. The model was exported to \textbf{ONNX (Open Neural
-Network Exchange)} format and executed within the simulator using
-\textbf{ONNX Runtime}. During the CLOCK algorithm's eviction process,
-before an object is promoted, its metadata is fed into the ML model.
-If the model's output exceeds a predefined threshold, the object is
-immediately evicted instead of being promoted, thus preventing a
-potentially wasted promotion.
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.8\columnwidth]{gambar/model-impl.png}}
-  \caption{Flowchart of model implementation in the simulator.}
-  \label{fig:implementasi_model}
-\end{figure}
-
-\subsection{Evaluation}
-The performance of the ML-enhanced CLOCK algorithm was compared
-against the standard CLOCK algorithm and the theoretical upper bound
-of Offline CLOCK. Key metrics for comparison included the total
-number of promotions and the miss ratio.
-
-\section{Results and Analysis}
-Our primary expectation was that the machine learning model would
-significantly reduce the total number of object promotions within the
-CLOCK algorithm without substantially increasing the miss ratio. This
-would indicate a higher efficiency in cache management by eliminating
-unnecessary promotions while retaining relevant data.
-
-\subsection{Offline CLOCK Experiment Results}
-Initial experiments with the Offline CLOCK algorithm on the Meta
-Key-Value trace established a performance upper bound. As shown in
-Figure \ref{fig:hasil_offline_clock}, this simulation revealed a
-drastic reduction in both promotion count and miss ratio. This
-significant decrease strongly suggests that the standard CLOCK
-algorithm performs numerous wasted promotions, which not only consume
-computational resources but also "pollute" the cache with objects
-unlikely to be re-accessed.
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.8\columnwidth]{gambar/offline.png}}
-  \caption{Results from Offline CLOCK simulation on Meta Key-Value trace.}
-  \label{fig:hasil_offline_clock}
-\end{figure}
-
-\subsection{Initial Model Development Results}
-For model development, we employed logistic regression due to its
-simplicity and interpretability. The model's weights and threshold
-were tuned for optimal performance on validation data. Figure
-\ref{fig:hasil_model_lr} illustrates the comparison of results after
-applying the model.
-
-\begin{figure}[htbp]
-  \centerline{\includegraphics[width=0.8\columnwidth]{gambar/res.png}}
-  \caption{Comparison of results from the logistic regression model.}
-  \label{fig:hasil_model_lr}
-\end{figure}
-
-Figure \ref{fig:hasil_model_lr} demonstrates a significant reduction
-in the average number of promotions, approximately \textbf{10\%},
-while the miss ratio remained stable and largely unaffected. These
-promising initial results align with our research objective: to
-reduce promotions without compromising the hit ratio. This indicates
-that the ML-enhanced CLOCK algorithm effectively identifies and
-prevents wasted promotions, leading to more efficient cache utilization.
-
-\section{Conclusion}
-This research successfully demonstrated that integrating a machine
-learning model into the CLOCK cache replacement algorithm
-significantly enhances cache management efficiency. The developed
-logistic regression model effectively identified and prevented
-unnecessary object promotions, leading to an approximate 10\%
-reduction in total promotions on test data. Crucially, this reduction
-was achieved without a significant negative impact on the system's
-miss ratio, thus maintaining the cache's primary function of serving
-data requests efficiently.
-
-Our findings highlight that even relatively simple and lightweight
-machine learning models can yield substantial performance
-improvements in classical cache algorithms. This opens up
-opportunities for similar implementations in real-world systems where
-computational overhead is a critical consideration. Future work could
-explore more complex ML architectures, such as neural networks or
-ensemble models, investigate reinforcement learning approaches for
-adaptive eviction policies, and validate the proposed algorithm in
-real production environments.
-
+\input{sections/1-introduction.tex}
+\input{sections/2-related-work.tex}
+\input{sections/3-system-designs.tex}
+\input{sections/4-experimental-setup.tex}
+\input{sections/5-evaluation.tex}
+\input{sections/6-conclusion.tex}
 \section*{Acknowledgment}
-The authors would like to thank [Optional: individuals or groups who
-provided support, e.g., for data, discussions, or infrastructure].
+The authors would like to thank CloudLab for providing necessary
+devices for our experiments.
 
+\FloatBarrier
 \bibliographystyle{IEEEtran}
-\bibliography{references/references.bib}
+\bibliography{references/references}
 
 \end{document}
-

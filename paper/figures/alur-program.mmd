@@ -1,0 +1,7 @@
+graph TD
+A[Read trace] --> B{Object in Cache}
+B -- Yes --> C[Hit]
+B -- No --> D[Miss]
+D --> E{Cache has space}
+E -- Yes --> F[Insert object]
+E -- No --> G[Evict object] --> D

@@ -1,0 +1,109 @@
+\section{Experimental Setup}
+\label{sec:experimental_setup}
+
+To rigorously evaluate the proposed \textit{PredCLOCK} (ML-CLOCK)
+mechanism, we developed a custom simulation environment capable of
+trace replay and machine learning inference. This section details the
+hardware infrastructure, dataset characteristics, baseline
+algorithms, and performance metrics used in our evaluation.
+
+\subsection{Simulation Environment}
+The experiments were conducted on a high-performance server designed
+to handle large-scale trace simulations and parallel processing. The
+specific specifications are chosen to ensure the entire trace and
+cache structures reside in memory, minimizing I/O bottlenecks during
+the simulation \cite{Yang2021A}.
+
+\begin{itemize}
+  \item \textbf{Hardware:} The testbed consists of an Intel Xeon
+    Silver 4114 processor (40 logical cores at 3.00 GHz) and 192 GiB of RAM.
+  \item \textbf{Software Stack:} The simulator is implemented in C++
+    for efficiency, utilizing \textit{LibCacheSim} \cite{Yang2021A}
+    as the foundational library for cache modeling and trace parsing.
+  \item \textbf{Inference Engine:} For the ML-based eviction logic,
+    we integrated \textit{ONNX Runtime} \cite{Tian2020Compiling}
+    directly into the C++ environment. This allows the system to
+    execute models trained in Python (via Keras/TensorFlow
+    \cite{chollet2015keras, tensorflow2015-whitepaper}) with minimal
+    latency overhead during the eviction decision process
+    \cite{Jajal2024Interoperability}.
+\end{itemize}
+
+\subsection{Workload Datasets}
+To ensure reproducibility and isolate the impact of access patterns,
+we utilized synthetic traces following a Zipfian distribution.
+Zipfian distributions accurately model real-world web traffic, where
+a small fraction of content accounts for the majority of requests
+\cite{Breslau1999Web}.
+
+The datasets were generated procedurally using \textit{LibCacheSim}
+utilities in the \texttt{oracleGeneral} binary format.
+Table~\ref{tab:dataset_specs} summarizes the workload parameters. We
+configured the Zipfian parameter ($\alpha$) to 1.0, representing a
+standard skew found in web workloads. The stationary nature of these
+traces allows us to evaluate the algorithm's steady-state performance
+without the noise of phase changes.
+
+\begin{table}[t]
+  \caption{Synthetic Zipfian Dataset Specifications}
+  \label{tab:dataset_specs}
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Parameter} & \textbf{Value} \\
+    \hline
+    Total Requests & 10,000,000 \\
+    \hline
+    Unique Objects & 1,000,000 \\
+    \hline
+    Zipf Parameter ($\alpha$) & 1.0 \\
+    \hline
+    Trace Format & oracleGeneral (Binary) \\
+    \hline
+    Data per Entry & 16 bytes (Time + ID + Size) \\
+    \hline
+    Distribution Type & Stationary \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Baselines for Comparison}
+We compare the performance of our proposed \textit{PredCLOCK} against
+three distinct baselines to evaluate its efficiency and effectiveness:
+
+\begin{enumerate}
+  \item \textbf{Standard CLOCK:} The unmodified CLOCK algorithm
+    serves as the primary baseline. It operates purely on recency
+    using a circular buffer and reference bits. It is known to suffer
+    from scan resistance issues, where one-time access objects flush
+    useful data.
+  \item \textbf{Offline CLOCK (Theoretical Upper Bound):} This
+    algorithm acts as an oracle with perfect knowledge of future
+    accesses. It performs an initial scan of the trace to identify
+    promotions that result in hits. If a promotion is deemed "Wasted"
+    (the object is evicted before being hit), Offline CLOCK
+    suppresses the promotion. This represents the theoretical maximum
+    efficiency achievable \cite{Belady1966A}.
+  \item \textbf{Optimal Zipf Promotion:} A heuristic-based oracle
+    that promotes objects based solely on their global popularity
+    ranking within the Zipfian distribution. This baseline highlights
+    the value of global frequency knowledge versus local access patterns.
+\end{enumerate}
+
+\subsection{Evaluation Metrics}
+To measure the effectiveness of the cache replacement strategies, we
+focus on two key metrics:
+\begin{itemize}
+  \item \textbf{Miss Ratio:} The fraction of requests that are not
+    served from the cache. A lower miss ratio indicates better cache utility.
+  \item \textbf{Promotion Rate:} The total number of items promoted
+    from the probationary state to the protected state (or inserted
+    into the main cache). Reducing unnecessary promotions is critical
+    for minimizing memory writes, which is particularly important for
+    extending the lifespan of SSD-based caches \cite{Sun2022NCache,
+    Wang2018Efficient}.
+\end{itemize}
+
+Experiments were conducted across various cache sizes, ranging from
+1\% to 40\% of the total unique object footprint, to analyze
+performance under different levels of cache pressure.

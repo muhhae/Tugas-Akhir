@@ -1,0 +1,115 @@
+\chapter{PENUTUP}
+
+Bab ini merangkum temuan-temuan kunci yang diperoleh dari eksperimen integrasi
+\textit{machine learning} ke dalam algoritma manajemen \textit{cache} CLOCK,
+serta memberikan rekomendasi strategis untuk pengembangan penelitian
+selanjutnya.
+
+\section{Kesimpulan}
+
+Berdasarkan analisis data pengujian dan evaluasi kinerja yang telah
+dipaparkan pada bab sebelumnya,
+penulis menarik beberapa kesimpulan kritis sebagai berikut:
+
+\begin{enumerate}
+  \item \textbf{Efisiensi Penulisan Terbukti Namun Terbatas.}
+    Implementasi ML-CLOCK berhasil membuktikan hipotesis awal bahwa
+    model prediktif
+    dapat mengurangi operasi penulisan (\textit{promotions}) ke memori utama.
+    Pengurangan konsisten sebesar 8--10\% tercapai di seluruh variasi
+    ukuran \textit{cache}.
+    Meskipun angka ini signifikan untuk memperpanjang umur perangkat
+    penyimpanan (\textit{endurance}),
+    capaian ini masih jauh di bawah batas optimal teoretis
+    \textit{Offline CLOCK} yang mencapai 43\%.
+    Hal ini menunjukkan bahwa model masih bersikap konservatif dalam
+    pengambilan keputusan.
+
+  \item \textbf{Trade-off Kinerja pada Skala Besar.}
+    Terdapat pola kinerja non-linear yang jelas. Pada lingkungan
+    dengan tekanan memori tinggi
+    (ukuran \textit{cache} 1\% -- 20\%), ML-CLOCK memberikan keuntungan ganda:
+    pengurangan \textit{miss ratio} dan penghematan promosi.
+    Namun, terjadi regresi kinerja pada ukuran \textit{cache} 40\%,
+    di mana model menjadi terlalu selektif (\textit{over-selective})
+    sehingga membuang objek
+    yang seharusnya disimpan saat ruang tersedia.
+    Ini menegaskan bahwa pendekatan ML statis tanpa adaptasi dinamis terhadap
+    ketersediaan ruang memiliki risiko pada kapasitas besar.
+
+  \item \textbf{Superioritas Oracle Mengungkap Batas Prediksi Lokal.}
+    Dominasi strategi \textit{Optimal Zipf Promotion} terhadap
+    ML-CLOCK di seluruh metrik
+    mengkonfirmasi bahwa dalam distribusi Zipfian, pengetahuan global
+    mengenai popularitas objek
+    jauh lebih berharga daripada pola akses lokal (\textit{recency}
+    dan frekuensi jangka pendek).
+    ML-CLOCK yang hanya mengandalkan metadata lokal kesulitan untuk
+    mereplikasi akurasi
+    yang dimiliki oleh algoritma berbasis pengetahuan global tersebut.
+
+  \item \textbf{Kontribusi Arsitektur Integrasi ONNX.}
+    Terlepas dari kinerja model prediksi spesifik yang digunakan,
+    kontribusi teknis utama dari penelitian ini adalah keberhasilan
+    pembangunan kerangka kerja
+    (\textit{framework}) simulasi hibrida.
+    Mekanisme integrasi model Python ke dalam lingkungan C++ berkinerja tinggi
+    menggunakan format \textbf{ONNX (Open Neural Network Exchange)}
+    terbukti andal,
+    stabil, dan minim latensi.
+    Infrastruktur ini memecahkan hambatan bahasa pemrograman yang
+    selama ini menyulitkan
+    peneliti sistem operasi untuk mengadopsi model \textit{deep
+    learning} modern.
+\end{enumerate}
+
+\section{Saran}
+
+Penelitian ini membuka jalan bagi eksplorasi lebih lanjut dalam
+domain \textit{AI-driven cache replacement}.
+Untuk mengatasi keterbatasan yang ditemukan, penulis mengajukan
+saran-saran berikut:
+
+\begin{enumerate}
+  \item \textbf{Pemanfaatan Kerangka Kerja ONNX untuk Riset Lanjutan.}
+    Arsitektur simulasi yang telah dibangun dengan integrasi
+    \textit{ONNX Runtime}
+    dirancang agar bersifat modular dan agnostik terhadap jenis model.
+    Peneliti lain sangat disarankan untuk menggunakan kembali
+    (\textit{reuse}) infrastruktur ini
+    untuk menguji arsitektur model yang berbeda (seperti LSTM,
+    Transformer, atau Reinforcement Learning)
+    tanpa perlu membangun ulang simulator dari nol.
+    Kode sumber simulator dapat dijadikan basis standar (\textit{testbed}) untuk
+    komunitas riset manajemen memori.
+
+  \item \textbf{Penggunaan Trace Dunia Nyata (Real-world Workloads).}
+    Evaluasi pada dataset sintetis Zipfian memiliki keterbatasan dalam menangkap
+    dinamika temporal yang kompleks, seperti \textit{burstiness} atau
+    perubahan fase popularitas.
+    Penelitian selanjutnya disarankan menggunakan \textit{trace}
+    produksi dari CDN
+    (Content Delivery Network) atau basis data skala besar.
+    Data riil akan memberikan tantangan yang lebih adil bagi model ML
+    dibandingkan distribusi statis Zipfian yang cenderung
+    menguntungkan metode heuristik sederhana.
+
+  \item \textbf{Eksplorasi Fitur Non-Linear.}
+    Fitur \texttt{vtime\_since\_access} terbukti kurang efektif dan
+    berpotensi menjadi \textit{noise}
+    pada distribusi Zipfian. Disarankan untuk mengeksplorasi fitur
+    yang lebih kompleks,
+    seperti distribusi waktu antar-kedatangan (\textit{inter-arrival
+    time distribution})
+    atau fitur berbasis grafik relasi antar-objek, untuk menangkap pola akses
+    yang tidak terdeteksi oleh statistik frekuensi sederhana.
+
+  \item \textbf{Mekanisme Threshold Adaptif.}
+    Untuk mengatasi masalah regresi pada \textit{cache} ukuran besar,
+    model statis dengan ambang batas tetap (0.6 -- 0.8) harus ditinggalkan.
+    Disarankan pengembangan mekanisme \textit{adaptive thresholding}
+    di mana ambang batas penerimaan objek diturunkan secara otomatis
+    ketika tekanan pada memori rendah (banyak ruang kosong) dan dinaikkan
+    ketika memori penuh, menyerupai perilaku kontrol umpan balik
+    (\textit{feedback loop}).
+\end{enumerate}

@@ -1,0 +1,7 @@
+graph TD
+  A[Queue tail] --> B{Has object been accessed?}
+  B -- No --> C
+  B -- Yes --> D(Model) --> E[Output: 0 - 1]
+  E --> F{Exceed the threshold?}
+  F -- Yes --> C[Evict object]
+  F -- No --> G[Promote object]

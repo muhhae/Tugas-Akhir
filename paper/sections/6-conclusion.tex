@@ -1,0 +1,65 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+Based on the analysis of test data and performance evaluation, the
+following critical conclusions are drawn regarding the proposed
+\textbf{PredCLOCK} system:
+
+\begin{enumerate}
+  \item \textbf{Proven Write Efficiency with Conservative Limits:}
+    The implementation of \textit{PredCLOCK} successfully validated
+    the hypothesis that a predictive model can reduce write
+    operations (promotions) to main memory. A consistent reduction of
+    \textbf{8--10\%} was achieved across all cache size variations
+    compared to the Standard CLOCK baseline.
+    While this reduction helps extend the endurance of modern storage
+    devices (such as NVM or SSDs), it falls significantly short of
+    the theoretical optimal bound of \textbf{43\%} achieved by the
+    \textit{Offline CLOCK} oracle. This gap indicates that the model,
+    bounded by local feature visibility, adopts a conservative
+    decision-making process to preserve cache hits.
+
+  \item \textbf{Criticality of Handling Class Imbalance:}
+    The parameter tuning phase revealed that the extreme class
+    imbalance in Zipfian workloads (where "one-hit wonders" dominate
+    "reused" objects by approx. 80:20) is the primary challenge for
+    ML-based caching.
+    \begin{itemize}
+      \item The \textbf{Aggressive Model} (Unweighted Loss) failed
+        systemically, yielding a 2\% regression in Miss Ratio
+        (Service Degradation) due to bias toward the majority class.
+      \item The \textbf{Conservative Model} (Weighted Loss 2:1)
+        successfully mitigated this risk, mimicking the safety of
+        Standard CLOCK while filtering obvious waste. This confirms
+        that cost-sensitive learning is mandatory for cache
+        replacement policies.
+    \end{itemize}
+
+  \item \textbf{Non-Linear Scalability and Over-Selectivity:}
+    There is a distinct non-linear performance pattern relative to
+    cache size. In high-pressure environments (1\% -- 20\% capacity),
+    \textit{PredCLOCK} provides a "double benefit" of reduced miss
+    ratios and reduced promotions. However, a performance regression
+    (+0.15\% Miss Ratio) occurs at a cache size of 40\%. At this
+    capacity, the static decision threshold (0.8) becomes
+    \textbf{over-selective}, discarding borderline objects that
+    should have been stored given the ample available space. This
+    confirms that static ML thresholds lack the flexibility required
+    for varying memory pressures.
+
+  \item \textbf{Superiority of Oracle Knowledge:}
+    The dominance of the \textit{Optimal Zipf Promotion} strategy
+    over \textit{PredCLOCK} across all metrics confirms that in
+    Zipfian distributions, global knowledge regarding object
+    popularity is far more valuable than the local access patterns
+    (recency and short-term frequency) utilized by \textit{PredCLOCK}
+    .
+
+  \item \textbf{Viability of Hybrid Architecture:}
+    Technically, this research demonstrated the viability of a hybrid
+    simulation framework. The integration of Python-trained models
+    into a high-performance C++ environment via \textbf{ONNX (Open
+    Neural Network Exchange)} proved stable and efficient, bridging
+    the gap between modern deep learning tools and operating system
+    simulations.
+\end{enumerate}
